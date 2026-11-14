@@ -1,20 +1,29 @@
 /**
- * 3D Moon hero. Three.js is loaded from a CDN; if it (or WebGL) is missing the
- * module falls back to a flat, still-clickable orthographic projection so the
- * landing page always works.
+ * 3D Moon.
+ *
+ * Three.js comes from a CDN; without WebGL the module falls back to a flat,
+ * clickable orthographic projection so the site still works.
  *
  * Body frame -> scene frame: (x, y, z)_body -> (x, z, y)_three, so the lunar
- * north pole is +Y in the scene.
+ * north pole is +Y and the south pole is -Y.
+ *
+ * The daylight is not a lamp. It is `dot(normal, subsolar direction)` inside the
+ * fragment shader, which keeps the terminator exactly where the ephemeris says
+ * it is whatever the albedo map looks like.
  */
 
 import { siteGeometry } from './ephemeris.js';
 
-const PIN_COLORS = {
-  landed: 0xf59e0b,
-  planned: 0xe2e8f0,
-  lost: 0x64748b,
-  reference: 0x94a3b8,
+const STATUS_COLORS = {
+  landed: '#f6b23c',
+  planned: '#eaf1fb',
+  lost: '#71829a',
+  reference: '#9fb0c6',
 };
+
+const MAP_IMAGE = 'assets/img/moon.jpg';          // 4096 x 2048
+const MAP_PREVIEW = 'assets/img/low/moon.jpg';    // 2048 x 1024, first paint
+const RELIEF_IMAGE = 'assets/img/ldem_3_8bit.jpg'; // LOLA global relief, 8 bit
 
 function mulberry32(seed) {
   let a = seed;
@@ -27,6 +36,7 @@ function mulberry32(seed) {
   };
 }
 
+/** Grey Moon used only while the photograph decodes. */
 function moonCanvas() {
   const canvas = document.createElement('canvas');
   canvas.width = 1024;
@@ -37,7 +47,6 @@ function moonCanvas() {
   ctx.fillStyle = '#b6b3ab';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Maria: broad dark basalt plains.
   for (let i = 0; i < 18; i += 1) {
     const x = rand() * canvas.width;
     const y = 90 + rand() * 300;
@@ -52,7 +61,6 @@ function moonCanvas() {
     ctx.fill();
   }
 
-  // Craters with a bright rim.
   for (let i = 0; i < 700; i += 1) {
     const x = rand() * canvas.width;
     const y = rand() * canvas.height;
@@ -65,102 +73,108 @@ function moonCanvas() {
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = 'rgba(226,224,216,0.22)';
-    ctx.lineWidth = Math.max(0.5, r * 0.12);
-    ctx.beginPath();
-    ctx.arc(x, y, r, Math.PI * 1.05, Math.PI * 1.95);
-    ctx.stroke();
   }
-
-  // A few bright ray craters (Tycho-like).
-  for (let i = 0; i < 7; i += 1) {
-    const x = rand() * canvas.width;
-    const y = 120 + rand() * 300;
-    const r = 3 + rand() * 6;
-    const rays = ctx.createRadialGradient(x, y, r, x, y, r * 9);
-    rays.addColorStop(0, 'rgba(236,234,226,0.5)');
-    rays.addColorStop(1, 'rgba(236,234,226,0)');
-    ctx.fillStyle = rays;
-    ctx.beginPath();
-    ctx.arc(x, y, r * 9, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = 'rgba(244,242,234,0.85)';
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // Fine speckle.
-  for (let i = 0; i < 4000; i += 1) {
-    const x = rand() * canvas.width;
-    const y = rand() * canvas.height;
-    ctx.fillStyle = rand() > 0.5 ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
-    ctx.fillRect(x, y, 1.6, 1.6);
-  }
-
   return canvas;
 }
 
-function earthCanvas() {
+/**
+ * A marker is a soft halo, a bright core and a thin ring. Drawn once per
+ * colour on a 128 px canvas, then reused as a sprite so it always faces the
+ * camera and never grows into a blob when you zoom out.
+ */
+const pinTextures = new Map();
+
+function pinTexture(THREE, color) {
+  if (pinTextures.has(color)) return pinTextures.get(color);
+  const size = 128;
   const canvas = document.createElement('canvas');
-  canvas.width = 1024;
-  canvas.height = 512;
+  canvas.width = size;
+  canvas.height = size;
   const ctx = canvas.getContext('2d');
-  const rand = mulberry32(7719);
+  const c = size / 2;
 
-  const ocean = ctx.createLinearGradient(0, 0, 0, 512);
-  ocean.addColorStop(0, '#0f2f5c');
-  ocean.addColorStop(0.5, '#1b4f8a');
-  ocean.addColorStop(1, '#0f2f5c');
-  ctx.fillStyle = ocean;
-  ctx.fillRect(0, 0, 1024, 512);
+  const halo = ctx.createRadialGradient(c, c, 2, c, c, c);
+  halo.addColorStop(0, 'rgba(255,255,255,0.95)');
+  halo.addColorStop(0.16, `${color}`);
+  halo.addColorStop(0.42, `${color}55`);
+  halo.addColorStop(1, `${color}00`);
+  ctx.fillStyle = halo;
+  ctx.beginPath();
+  ctx.arc(c, c, c, 0, Math.PI * 2);
+  ctx.fill();
 
-  const landColors = ['#3d5e34', '#56703c', '#8a7a52', '#6b6a45'];
-  for (let i = 0; i < 26; i += 1) {
-    const x = rand() * 1024;
-    const y = 90 + rand() * 330;
-    const r = 30 + rand() * 90;
-    ctx.fillStyle = landColors[Math.floor(rand() * landColors.length)];
-    ctx.globalAlpha = 0.9;
-    ctx.beginPath();
-    for (let k = 0; k < 9; k += 1) {
-      const a = (k / 9) * Math.PI * 2;
-      const rr = r * (0.5 + rand() * 0.8);
-      const px = x + Math.cos(a) * rr;
-      const py = y + Math.sin(a) * rr * 0.65;
-      if (k === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
-    ctx.closePath();
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
+  ctx.strokeStyle = 'rgba(6,10,18,0.85)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(c, c, 9, 0, Math.PI * 2);
+  ctx.stroke();
 
-  // Polar ice.
-  ctx.fillStyle = 'rgba(240,246,252,0.9)';
-  ctx.fillRect(0, 0, 1024, 26);
-  ctx.fillRect(0, 486, 1024, 26);
+  ctx.fillStyle = '#0a0f1a';
+  ctx.beginPath();
+  ctx.arc(c, c, 7.2, 0, Math.PI * 2);
+  ctx.fill();
 
-  // Clouds.
-  for (let i = 0; i < 60; i += 1) {
-    const x = rand() * 1024;
-    const y = rand() * 512;
-    const r = 14 + rand() * 46;
-    const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
-    grad.addColorStop(0, 'rgba(255,255,255,0.5)');
-    grad.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.ellipse(x, y, r, r * 0.45, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(c, c, 5.2, 0, Math.PI * 2);
+  ctx.fill();
 
-  return canvas;
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  pinTextures.set(color, texture);
+  return texture;
 }
 
-function surfaceVector(site, radius) {
-  const la = (site.lat * Math.PI) / 180;
-  const lo = (site.lon * Math.PI) / 180;
+/** Crosshair marker for a free study point, distinct from a catalogue site. */
+function probeTexture(THREE) {
+  const key = '__probe';
+  if (pinTextures.has(key)) return pinTextures.get(key);
+  const size = 160;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const c = size / 2;
+
+  const halo = ctx.createRadialGradient(c, c, 4, c, c, c);
+  halo.addColorStop(0, 'rgba(120,240,255,0.55)');
+  halo.addColorStop(1, 'rgba(120,240,255,0)');
+  ctx.fillStyle = halo;
+  ctx.fillRect(0, 0, size, size);
+
+  ctx.strokeStyle = 'rgba(8,12,20,0.9)';
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.arc(c, c, 40, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.strokeStyle = '#a8f2ff';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(c, c, 40, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(c, c - 54); ctx.lineTo(c, c - 22);
+  ctx.moveTo(c, c + 22); ctx.lineTo(c, c + 54);
+  ctx.moveTo(c - 54, c); ctx.lineTo(c - 22, c);
+  ctx.moveTo(c + 22, c); ctx.lineTo(c + 54, c);
+  ctx.stroke();
+
+  ctx.fillStyle = '#eafcff';
+  ctx.beginPath();
+  ctx.arc(c, c, 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  pinTextures.set(key, texture);
+  return texture;
+}
+
+/** Selenographic degrees -> scene vector (body z-up becomes scene y-up). */
+export function surfaceVector(latDeg, lonDeg, radius = 1) {
+  const la = (latDeg * Math.PI) / 180;
+  const lo = (lonDeg * Math.PI) / 180;
   return {
     x: Math.cos(la) * Math.cos(lo) * radius,
     y: Math.sin(la) * radius,
@@ -168,212 +182,273 @@ function surfaceVector(site, radius) {
   };
 }
 
+/** Scene point -> selenographic coordinates (degrees, longitude 0..360). */
+export function toLatLon(point) {
+  const r = Math.hypot(point.x, point.y, point.z) || 1;
+  const lat = (Math.asin(Math.max(-1, Math.min(1, point.y / r))) * 180) / Math.PI;
+  let lon = (Math.atan2(point.z, point.x) * 180) / Math.PI;
+  if (lon < 0) lon += 360;
+  return { lat, lon };
+}
+
 function easeInOutCubic(x) {
   return x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2;
 }
 
-export async function mountMoon(container, options) {
-  const { sites, onSelect, dateMs, reducedMotion, hint, skipLabel, fit, live } = options;
+export async function mountMoon(container, options = {}) {
   try {
     const THREE = await import('three');
     const { OrbitControls } = await import('three/addons/controls/OrbitControls.js');
-    return createScene(THREE, OrbitControls, container, {
-      sites, onSelect, dateMs, reducedMotion, hint, skipLabel, fit, live,
-    });
+    return createScene(THREE, OrbitControls, container, options);
   } catch (error) {
     console.warn('[moon3d] 3D indisponible, repli 2D :', error?.message || error);
-    return mountFallback(container, { sites, onSelect, hint });
+    return mountFallback(container, options);
   }
 }
 
 function createScene(THREE, OrbitControls, container, opts) {
-  const { sites, onSelect, dateMs, reducedMotion, live = false, fit = false } = opts;
+  const {
+    sites = [], onSelect, dateMs = Date.now(), reducedMotion = false,
+    live = false, fit = false, view = 'globe', probe = null, onPick = null,
+    autoRotate = true,
+  } = opts;
+
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
-  renderer.setSize(container.clientWidth, container.clientHeight);
+  renderer.setSize(container.clientWidth || 1, container.clientHeight || 1);
   renderer.domElement.setAttribute('aria-hidden', 'true');
   container.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 120);
-
-  // Start from the procedural relief so the globe appears immediately, then
-  // swap in the real photographic lunar map once it is decoded.
-  const texture = new THREE.CanvasTexture(moonCanvas());
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  const camera = new THREE.PerspectiveCamera(
+    40,
+    (container.clientWidth || 1) / (container.clientHeight || 1),
+    0.05,
+    60,
+  );
 
   const group = new THREE.Group();
   scene.add(group);
 
-  // Day/night is computed in the shader from the real subsolar direction, so the
-  // terminator is always visible and always where the geometry says it is — a
-  // directional light alone washes out on a bright albedo map.
+  const albedo = new THREE.CanvasTexture(moonCanvas());
+  albedo.colorSpace = THREE.SRGBColorSpace;
+
   const uniforms = {
-    dayMap: { value: texture },
-    sunDir: { value: new THREE.Vector3(1, 0, 0) },
-    nightFloor: { value: 0.09 },
+    dayMap: { value: albedo },
+    heightMap: { value: null },
+    hasRelief: { value: 0 },
+    sunDir: { value: new THREE.Vector3(-1, 0, 0) },
+    nightFloor: { value: 0.055 },
+    bump: { value: 1.6 },
+    relief: { value: 0.014 },
+    texel: { value: new THREE.Vector2(1 / 1024, 1 / 512) },
   };
 
-  const moon = new THREE.Mesh(
-    new THREE.SphereGeometry(1, 160, 120),
-    new THREE.ShaderMaterial({
-      uniforms,
-      vertexShader: `
-        varying vec2 vUv;
-        varying vec3 vNormalView;
-        void main() {
-          vUv = uv;
-          vNormalView = normalize(normalMatrix * normal);
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }`,
-      fragmentShader: `
-        uniform sampler2D dayMap;
-        uniform vec3 sunDir;
-        uniform float nightFloor;
-        varying vec2 vUv;
-        varying vec3 vNormalView;
-        void main() {
-          vec3 base = texture2D(dayMap, vUv).rgb;
-          vec3 sunView = normalize((viewMatrix * vec4(sunDir, 0.0)).xyz);
-          float d = dot(normalize(vNormalView), sunView);
-          // Soft, physically placed terminator.
-          float lit = smoothstep(-0.055, 0.085, d);
-          vec3 night = base * nightFloor + vec3(0.004, 0.007, 0.016);
-          vec3 day = base * (0.82 + 0.35 * max(d, 0.0));
-          gl_FragColor = vec4(mix(night, day, lit), 1.0);
-        }`,
-    }),
-  );
+  const material = new THREE.ShaderMaterial({
+    uniforms,
+    vertexShader: `
+      uniform sampler2D heightMap;
+      uniform float hasRelief;
+      uniform float relief;
+      varying vec2 vUv;
+      varying vec3 vWorldPos;
+      varying vec3 vWorldNormal;
+
+      void main() {
+        vUv = uv;
+        vec3 p = position;
+
+        // Real LOLA relief, exaggerated on purpose: the true amplitude is
+        // +-5 km on a 1737 km radius (0.3 %), invisible at this scale.
+        if (hasRelief > 0.5) {
+          float h = texture2D(heightMap, vec2(1.0 - uv.x, uv.y)).r;
+          p *= 1.0 + (h - 0.5) * relief * 2.0;
+        }
+
+        vec4 world = modelMatrix * vec4(p, 1.0);
+        vWorldPos = world.xyz;
+        vWorldNormal = normalize(mat3(modelMatrix) * normal);
+        gl_Position = projectionMatrix * viewMatrix * world;
+      }`,
+    fragmentShader: `
+      uniform sampler2D dayMap;
+      uniform sampler2D heightMap;
+      uniform float hasRelief;
+      uniform vec3 sunDir;
+      uniform float nightFloor;
+      uniform float bump;
+      uniform vec2 texel;
+      varying vec2 vUv;
+      varying vec3 vWorldPos;
+      varying vec3 vWorldNormal;
+
+      void main() {
+        // SphereGeometry runs its u the other way round, so the equirectangular
+        // maps are sampled mirrored; that is what keeps the maria under their
+        // selenographic coordinates. ShaderMaterial ignores texture.repeat, so
+        // the flip has to be written here.
+        vec2 uv = vec2(1.0 - vUv.x, vUv.y);
+        vec3 base = texture2D(dayMap, uv).rgb;
+
+        vec3 n = normalize(vWorldNormal);
+        if (hasRelief > 0.5) {
+          // Terrain normal from the height field itself, in the body frame.
+          // Screen-space derivatives (dFdx/dFdy) look tempting but blow up at
+          // the poles, where an equirectangular map compresses longitude to a
+          // point; the result was a field of black speckles. Two fixed texel
+          // steps stay stable everywhere.
+          float t = 1.0 / 1024.0;
+          float hL = texture2D(heightMap, uv - vec2(t, 0.0)).r;
+          float hR = texture2D(heightMap, uv + vec2(t, 0.0)).r;
+          float hD = texture2D(heightMap, uv - vec2(0.0, t * 2.0)).r;
+          float hU = texture2D(heightMap, uv + vec2(0.0, t * 2.0)).r;
+
+          vec3 east = cross(vec3(0.0, 1.0, 0.0), n);
+          if (length(east) > 0.001) {
+            east = normalize(east);
+            vec3 north = cross(n, east);
+            // Texture +u runs west (the map is mirrored), +v runs north.
+            vec2 slope = vec2(hL - hR, hU - hD);
+            n = normalize(n - (east * slope.x + north * slope.y) * bump * 1.7);
+          }
+        }
+
+        float d = dot(n, normalize(sunDir));
+        float lit = smoothstep(-0.06, 0.095, d);
+        vec3 night = base * nightFloor + vec3(0.006, 0.010, 0.020);
+        vec3 day = base * (0.80 + 0.40 * max(d, 0.0));
+        gl_FragColor = vec4(mix(night, day, lit), 1.0);
+      }`,
+  });
+
+  const moon = new THREE.Mesh(new THREE.SphereGeometry(1, 192, 128), material);
   group.add(moon);
   container.dataset.moonTexture = 'procedural';
 
-  // Real lunar albedo map (NASA-derived, 1024x512 equirectangular). Mirrored in
-  // u because the sphere runs the other way round, so the maria stay under the
-  // selenographic coordinates of the markers.
-  new THREE.TextureLoader().load(
-    'assets/img/moon.jpg',
-    (photo) => {
-      photo.colorSpace = THREE.SRGBColorSpace;
-      photo.anisotropy = renderer.capabilities.getMaxAnisotropy();
-      photo.wrapS = THREE.RepeatWrapping;
-      photo.repeat.x = -1;
-      photo.offset.x = 1;
-      uniforms.dayMap.value = photo;
-      container.dataset.moonTexture = 'photo';
-      texture.dispose();
-    },
-    undefined,
-    () => { /* keep the procedural relief */ },
-  );
+  // --- textures ---------------------------------------------------------
 
-  const earthTex = new THREE.CanvasTexture(earthCanvas());
-  earthTex.colorSpace = THREE.SRGBColorSpace;
-  const earth = new THREE.Mesh(
-    new THREE.SphereGeometry(0.115, 48, 32),
-    new THREE.MeshStandardMaterial({ map: earthTex, roughness: 0.85, metalness: 0 }),
-  );
-  earth.position.set(-3.3, 0.75, -2.2);
-  scene.add(earth);
-
-  const sunDir = siteGeometry(sites[0], dateMs).subSolarDir;
-  const light = new THREE.DirectionalLight(0xfff4e0, 2.6);
-  light.position.set(sunDir.x * 8, sunDir.z * 8, sunDir.y * 8);
-  scene.add(light);
-  scene.add(new THREE.AmbientLight(0x8899bb, 0.14));
-
-  // The terminator is drawn as a thin ring whose normal is the subsolar
-  // direction: day and night are separated by a line that moves with the clock.
-  const terminator = new THREE.Mesh(
-    new THREE.RingGeometry(1.003, 1.007, 160),
-    new THREE.MeshBasicMaterial({
-      color: 0x9fb3d1,
-      transparent: true,
-      opacity: 0.28,
-      side: THREE.DoubleSide,
-      depthWrite: false,
-    }),
-  );
-  group.add(terminator);
-  const ringNormal = new THREE.Vector3(0, 0, 1);
-  const sunVector = new THREE.Vector3();
-  const ringQuat = new THREE.Quaternion();
-
-  // Live mode: the terminator follows the real subsolar point, so the day/night
-  // boundary on the globe advances with the clock instead of being frozen.
-  let simMs = dateMs;
-  const applyTime = (ms) => {
-    const dir = siteGeometry(sites[0], ms).subSolarDir;
-    light.position.set(dir.x * 8, dir.z * 8, dir.y * 8);
-    sunVector.set(dir.x, dir.z, dir.y).normalize();
-    uniforms.sunDir.value.copy(sunVector);
-    ringQuat.setFromUnitVectors(ringNormal, sunVector);
-    terminator.quaternion.copy(ringQuat);
-    // Observable trace of the lighting input, used by the self-check.
-    container.dataset.solar = `${sunVector.x.toFixed(4)},${sunVector.y.toFixed(4)},${sunVector.z.toFixed(4)}`;
+  const loader = new THREE.TextureLoader();
+  let previewDone = false;
+  const ready = { hi: null, relief: null };
+  let resolveReady = () => {};
+  const readyPromise = new Promise((resolve) => { resolveReady = resolve; });
+  let readyCount = 0;
+  const settle = () => {
+    readyCount += 1;
+    if (readyCount >= 2) resolveReady();
   };
-  applyTime(dateMs);
+  // Never hold the loading screen hostage to a slow texture.
+  setTimeout(() => resolveReady(), 9000);
 
-  // Subtle south-polar cap.
-  const cap = new THREE.Mesh(
-    new THREE.RingGeometry(0.16, 0.3, 64),
-    new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.22, side: THREE.DoubleSide }),
-  );
-  cap.position.set(0, -0.985, 0);
-  cap.rotation.x = -Math.PI / 2;
-  group.add(cap);
+  const applyMap = (texture, hiRes) => {
+    if (!texture) return;
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    uniforms.dayMap.value = texture;
+    uniforms.texel.value.set(1 / texture.image.width, 1 / texture.image.height);
+    container.dataset.moonTexture = hiRes ? 'photo-4k' : 'photo-2k';
+    if (!hiRes) previewDone = true;
+  };
 
-  const pins = [];
-  const pinGeo = new THREE.SphereGeometry(0.018, 14, 12);
+  loader.load(MAP_PREVIEW, (texture) => applyMap(texture, false), undefined, () => {});
+  loader.load(MAP_IMAGE, (texture) => {
+    applyMap(texture, true);
+    ready.hi = texture;
+    settle();
+  }, undefined, () => {
+    // A missing 4K file is not fatal: the 2K preview is already on screen.
+    settle();
+    if (!previewDone) container.dataset.moonTexture = 'procedural';
+  });
+
+  loader.load(RELIEF_IMAGE, (texture) => {
+    texture.colorSpace = THREE.NoColorSpace;
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    uniforms.heightMap.value = texture;
+    uniforms.hasRelief.value = 1;
+    ready.relief = texture;
+    settle();
+  }, undefined, () => settle());
+
+  // --- markers ----------------------------------------------------------
+
+  const markerGroup = new THREE.Group();
+  group.add(markerGroup);
+  const markers = [];
+  const baseScale = (status) => (status === 'landed' ? 0.062 : status === 'reference' ? 0.04 : 0.05);
+
   for (const site of sites) {
-    const p = surfaceVector(site, 1.012);
-    const mesh = new THREE.Mesh(
-      pinGeo,
-      new THREE.MeshBasicMaterial({ color: PIN_COLORS[site.status] ?? 0xe2e8f0 }),
-    );
-    mesh.position.set(p.x, p.y, p.z);
-    mesh.userData.site = site;
-    group.add(mesh);
-    pins.push(mesh);
+    const p = surfaceVector(site.lat, site.lon, 1.006);
+    const material2 = new THREE.SpriteMaterial({
+      map: pinTexture(THREE, STATUS_COLORS[site.status] || STATUS_COLORS.planned),
+      transparent: true,
+      depthWrite: false,
+      depthTest: true,
+      opacity: 0.95,
+    });
+    const sprite = new THREE.Sprite(material2);
+    sprite.position.set(p.x, p.y, p.z);
+    const scale = baseScale(site.status);
+    sprite.scale.setScalar(scale);
+    sprite.userData.site = site;
+    sprite.userData.baseScale = scale;
+    markerGroup.add(sprite);
+    markers.push(sprite);
   }
+
+  const probeSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: probeTexture(THREE),
+    transparent: true,
+    depthWrite: false,
+    opacity: 0.98,
+  }));
+  probeSprite.visible = false;
+  probeSprite.scale.setScalar(0.085);
+  markerGroup.add(probeSprite);
+
+  const setProbe = (point) => {
+    if (!point || !Number.isFinite(point.lat) || !Number.isFinite(point.lon)) {
+      probeSprite.visible = false;
+      return;
+    }
+    const p = surfaceVector(point.lat, point.lon, 1.008);
+    probeSprite.position.set(p.x, p.y, p.z);
+    probeSprite.visible = true;
+  };
+  setProbe(probe);
+
+  // --- camera, controls --------------------------------------------------
 
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
-  controls.dampingFactor = 0.06;
+  controls.dampingFactor = 0.07;
   controls.enablePan = false;
-  controls.minDistance = 1.45;
-  controls.maxDistance = 5.2;
-  controls.minPolarAngle = 0.15;
-  controls.maxPolarAngle = Math.PI - 0.15;
-  controls.autoRotate = !reducedMotion && !live;
-  controls.autoRotateSpeed = 0.32;
+  controls.rotateSpeed = 0.6;
+  // Close enough to read the surface, far enough to keep the disc whole.
+  controls.minDistance = 1.06;
+  controls.maxDistance = 6.2;
+  controls.minPolarAngle = 0.08;
+  controls.maxPolarAngle = Math.PI - 0.02;
+  controls.zoomToCursor = true;
+  controls.autoRotate = !reducedMotion && !live && !fit && autoRotate;
+  controls.autoRotateSpeed = 0.28;
 
-  const wide = { pos: new THREE.Vector3(0.6, 1.5, 4.6), target: new THREE.Vector3(0, 0, 0) };
-  const pole = { pos: new THREE.Vector3(0.85, -1.15, 1.75), target: new THREE.Vector3(0, -0.92, 0) };
+  const pole = { pos: new THREE.Vector3(0.01, -2.6, 0.02), target: new THREE.Vector3(0, 0, 0) };
 
-  camera.position.copy(wide.pos);
-  controls.target.copy(wide.target);
-  camera.lookAt(wide.target);
-
-  let intro = !reducedMotion && !live;
-  let introStart = performance.now();
-  const introMs = 2600;
-  controls.enabled = !intro;
-
-  // Hero framing: whole globe, centred, south pole towards the viewer. The
-  // distance is derived from whichever field of view is narrower, with a margin,
-  // so a tall phone screen does not crop the disc either.
-  let userMoved = false;
-  controls.addEventListener('start', () => { userMoved = true; });
-
-  const frameGlobe = () => {
-    if (!fit) return;
+  /** Distance at which the whole disc fits the container, margins included. */
+  const fitDistance = () => {
     const vFov = (camera.fov * Math.PI) / 180;
     const hFov = 2 * Math.atan(Math.tan(vFov / 2) * Math.max(camera.aspect, 0.2));
-    const half = Math.min(vFov, hFov) / 2;
-    const distance = 1.24 / Math.sin(half);
-    sunVector.set(0.193, -0.482, 0.854).normalize();
-    camera.position.copy(sunVector).multiplyScalar(distance);
+    return 1.07 / Math.sin(Math.min(vFov, hFov) / 2);
+  };
+
+  const frameGlobe = () => {
+    const distance = fitDistance();
+    // Slightly above the southern hemisphere: the polar sites are the subject,
+    // a full top-down view would flatten them.
+    camera.position.set(0.42, -0.58, 0.78).normalize().multiplyScalar(distance);
     controls.target.set(0, 0, 0);
     camera.lookAt(controls.target);
     camera.updateProjectionMatrix();
@@ -381,12 +456,51 @@ function createScene(THREE, OrbitControls, container, opts) {
     container.dataset.cam = `${camera.position.toArray().map((v) => v.toFixed(2)).join(',')}|aspect${camera.aspect.toFixed(2)}|fit1`;
   };
 
-  if (fit) {
-    intro = false;
-    controls.enabled = true;
+  /** Camera straight under the south pole: the "seen from below" view. */
+  const framePole = () => {
+    const distance = Math.min(2.9, fitDistance() * 0.86);
+    camera.position.set(0.02, -distance, 0.03);
+    controls.target.set(0, 0, 0);
+    camera.up.set(0, 0, 1);
+    camera.lookAt(controls.target);
+    camera.updateProjectionMatrix();
+    controls.update();
+    container.dataset.cam = `${camera.position.toArray().map((v) => v.toFixed(2)).join(',')}|south`;
+  };
+
+  camera.position.set(0.42, 0.75, 0.99).normalize().multiplyScalar(4.4);
+  camera.up.set(0, 1, 0);
+  controls.target.set(0, 0, 0);
+  camera.lookAt(controls.target);
+
+  let userMoved = false;
+  controls.addEventListener('start', () => { userMoved = true; });
+
+  if (view === 'south') {
+    framePole();
     controls.autoRotate = false;
+    controls.rotateSpeed = 0.32;
+    controls.minPolarAngle = Math.PI * 0.72;
+    controls.maxPolarAngle = Math.PI - 0.02;
+  } else if (fit) {
     frameGlobe();
+    controls.autoRotate = false;
   }
+
+  // --- lighting (shader driven) -----------------------------------------
+
+  const sunDir = new THREE.Vector3();
+  const tmp = siteGeometry(sites[0] || { lat: 0, lon: 0 }, dateMs).subSolarDir;
+  const applyTime = (ms) => {
+    const dir = siteGeometry(sites[0] || { lat: 0, lon: 0 }, ms).subSolarDir;
+    // Body (x, y, z) -> scene (x, z, y).
+    sunDir.set(dir.x, dir.z, dir.y).normalize();
+    uniforms.sunDir.value.copy(sunDir);
+    container.dataset.solar = `${sunDir.x.toFixed(4)},${sunDir.y.toFixed(4)},${sunDir.z.toFixed(4)}`;
+  };
+  applyTime(dateMs);
+
+  // --- pointer -----------------------------------------------------------
 
   const tip = document.createElement('div');
   tip.className = 'scene-tip';
@@ -399,33 +513,47 @@ function createScene(THREE, OrbitControls, container, opts) {
 
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2(-10, -10);
+  const globeHit = new THREE.Vector3();
   let hovered = null;
+  let downAt = null;
 
-  const onPointerMove = (event) => {
+  const toPointer = (event) => {
     const rect = renderer.domElement.getBoundingClientRect();
     pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-    if (intro) finishIntro();
+  };
+
+  const onPointerMove = (event) => {
+    toPointer(event);
   };
   const onPointerLeave = () => {
     pointer.set(-10, -10);
   };
-  const onClick = () => {
-    if (hovered) onSelect(hovered.userData.site.id);
+  const onPointerDown = (event) => {
+    downAt = { x: event.clientX, y: event.clientY };
+  };
+  const onClick = (event) => {
+    // A drag is not a click: rotating the globe must not drop a point.
+    if (downAt && Math.hypot(event.clientX - downAt.x, event.clientY - downAt.y) > 6) return;
+    if (hovered) {
+      onSelect?.(hovered.userData.site.id);
+      return;
+    }
+    if (!onPick) return;
+    toPointer(event);
+    raycaster.setFromCamera(pointer, camera);
+    const hit = raycaster.intersectObject(moon, false)[0];
+    if (!hit) return;
+    globeHit.copy(hit.point);
+    onPick(toLatLon(globeHit));
   };
 
   renderer.domElement.addEventListener('pointermove', onPointerMove);
   renderer.domElement.addEventListener('pointerleave', onPointerLeave);
+  renderer.domElement.addEventListener('pointerdown', onPointerDown);
   renderer.domElement.addEventListener('click', onClick);
 
-  function finishIntro() {
-    intro = false;
-    controls.enabled = true;
-    camera.position.copy(pole.pos);
-    controls.target.copy(pole.target);
-    controls.update();
-    container.dataset.cam = `${camera.position.toArray().map((v) => v.toFixed(2)).join(',')}|intro0`;
-  }
+  // --- resize ------------------------------------------------------------
 
   const resize = () => {
     if (!container.clientWidth || !container.clientHeight) return;
@@ -433,47 +561,49 @@ function createScene(THREE, OrbitControls, container, opts) {
     camera.aspect = container.clientWidth / container.clientHeight;
     camera.updateProjectionMatrix();
     if (fit && !userMoved) frameGlobe();
+    if (view === 'south' && !userMoved) framePole();
   };
   const observer = new ResizeObserver(resize);
   observer.observe(container);
 
+  // --- loop --------------------------------------------------------------
+
   let raf = 0;
   let disposed = false;
 
-  const tick = (now) => {
+  const tick = () => {
     if (disposed) return;
     raf = requestAnimationFrame(tick);
-
-    if (intro) {
-      const p = Math.min(1, (now - introStart) / introMs);
-      const e = easeInOutCubic(p);
-      camera.position.lerpVectors(wide.pos, pole.pos, e);
-      controls.target.lerpVectors(wide.target, pole.target, e);
-      camera.lookAt(controls.target);
-      if (p >= 1) {
-        intro = false;
-        controls.enabled = true;
-      }
-    } else {
-      controls.update();
-    }
+    controls.update();
 
     raycaster.setFromCamera(pointer, camera);
-    const hits = raycaster.intersectObjects(pins, false);
+    const hits = raycaster.intersectObjects(markers, false);
     const next = hits.length ? hits[0].object : null;
     if (next !== hovered) {
-      if (hovered) hovered.scale.setScalar(1);
+      if (hovered) hovered.userData.hover = false;
       hovered = next;
-      renderer.domElement.style.cursor = hovered ? 'pointer' : 'grab';
+      renderer.domElement.style.cursor = hovered ? 'pointer' : (onPick ? 'crosshair' : 'grab');
       if (hovered) {
-        hovered.scale.setScalar(1.9);
+        const site = hovered.userData.site;
         const rect = container.getBoundingClientRect();
         tip.hidden = false;
-        tip.innerHTML = `<strong>${hovered.userData.site.mission}</strong><span>${hovered.userData.site.name}</span><span class="mono">${hovered.userData.site.lat.toFixed(2)}°, ${hovered.userData.site.lon.toFixed(2)}°</span>`;
-        tip.style.transform = `translate(${((pointer.x + 1) / 2) * rect.width + 14}px, ${((1 - pointer.y) / 2) * rect.height - 12}px)`;
+        tip.innerHTML = `<strong>${site.mission}</strong><span>${site.name}</span>`
+          + `<span class="mono">${site.lat.toFixed(2)}°, ${site.lon.toFixed(2)}°</span>`;
+        const x = Math.min(rect.width - 170, Math.max(8, ((pointer.x + 1) / 2) * rect.width + 14));
+        const y = Math.max(40, ((1 - pointer.y) / 2) * rect.height - 12);
+        tip.style.transform = `translate(${x}px, ${y}px)`;
       } else {
         tip.hidden = true;
       }
+    }
+
+    // Ease the hovered marker instead of snapping it.
+    for (const marker of markers) {
+      const target = marker === hovered ? marker.userData.baseScale * 1.75 : marker.userData.baseScale;
+      const current = marker.scale.x;
+      const nextScale = current + (target - current) * 0.25;
+      marker.scale.setScalar(nextScale);
+      marker.material.opacity = marker === hovered ? 1 : 0.95;
     }
 
     renderer.render(scene, camera);
@@ -481,24 +611,28 @@ function createScene(THREE, OrbitControls, container, opts) {
   raf = requestAnimationFrame(tick);
 
   return {
-    skipIntro: finishIntro,
-    /** Move the clock: the light (and so the terminator) follows. */
-    setTime(ms) {
-      simMs = ms;
-      if (live) applyTime(ms);
-    },
+    ready: readyPromise,
+    skipIntro() {},
+    /** Move the clock: the terminator follows. */
+    setTime(ms) { applyTime(ms); },
+    setProbe,
+    framePole,
+    frameGlobe,
     dispose() {
       disposed = true;
       cancelAnimationFrame(raf);
       observer.disconnect();
       renderer.domElement.removeEventListener('pointermove', onPointerMove);
       renderer.domElement.removeEventListener('pointerleave', onPointerLeave);
+      renderer.domElement.removeEventListener('pointerdown', onPointerDown);
       renderer.domElement.removeEventListener('click', onClick);
       controls.dispose();
-      texture.dispose();
-      earthTex.dispose();
-      terminator.geometry.dispose();
-      terminator.material.dispose();
+      albedo.dispose();
+      for (const texture of [ready.hi, ready.relief]) texture?.dispose();
+      material.dispose();
+      moon.geometry.dispose();
+      for (const marker of markers) marker.material.dispose();
+      probeSprite.material.dispose();
       renderer.dispose();
       renderer.domElement.remove();
       tip.remove();
@@ -507,7 +641,8 @@ function createScene(THREE, OrbitControls, container, opts) {
   };
 }
 
-function mountFallback(container, { sites, onSelect, hint }) {
+/** No WebGL: an orthographic view from the south pole, still clickable. */
+function mountFallback(container, { sites = [], onSelect, hint }) {
   const canvas = document.createElement('canvas');
   canvas.width = 720;
   canvas.height = 720;
@@ -526,28 +661,22 @@ function mountFallback(container, { sites, onSelect, hint }) {
   ctx.arc(cx, cy, R, 0, Math.PI * 2);
   ctx.fill();
 
-  // Orthographic projection centred on the south pole.
   const project = (lat, lon) => {
     const la = (lat * Math.PI) / 180;
     const lo = (lon * Math.PI) / 180;
-    const x = Math.cos(la) * Math.sin(lo);
-    const y = Math.cos(la) * Math.cos(lo);
-    const visible = Math.sin(la) < 0 || y > 0;
-    return { x: cx + x * R, y: cy + y * R, visible };
+    return { x: cx + Math.cos(la) * Math.sin(lo) * R, y: cy + Math.cos(la) * Math.cos(lo) * R };
   };
 
   for (const site of sites) {
     const p = project(site.lat, site.lon);
     ctx.beginPath();
     ctx.arc(p.x, p.y, 9, 0, Math.PI * 2);
-    ctx.fillStyle = site.status === 'landed' ? '#f59e0b' : site.status === 'planned' ? '#e2e8f0' : '#94a3b8';
+    ctx.fillStyle = site.status === 'landed' ? '#f59e0b'
+      : site.status === 'planned' ? '#e2e8f0' : '#94a3b8';
     ctx.fill();
     ctx.strokeStyle = 'rgba(8,11,20,0.8)';
     ctx.lineWidth = 2;
     ctx.stroke();
-    ctx.fillStyle = '#0b1020';
-    ctx.font = '600 20px system-ui, sans-serif';
-    ctx.fillText(site.name.slice(0, 18), p.x + 16, p.y + 6);
   }
 
   const hintEl = document.createElement('p');
@@ -569,12 +698,17 @@ function mountFallback(container, { sites, onSelect, hint }) {
         best = site;
       }
     }
-    if (best) onSelect(best.id);
+    if (best) onSelect?.(best.id);
   };
   canvas.addEventListener('click', onClick);
 
   return {
+    ready: Promise.resolve(),
     skipIntro() {},
+    setTime() {},
+    setProbe() {},
+    framePole() {},
+    frameGlobe() {},
     dispose() {
       canvas.removeEventListener('click', onClick);
       canvas.remove();
