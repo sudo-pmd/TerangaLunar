@@ -11,17 +11,19 @@
     <meta property="og:description" content="Le cycle jour/nuit de la Lune, en direct, et les vraies fenêtres d’atterrissage au pôle Sud.">
     <meta property="og:image" content="assets/img/teranga-lunar.svg">
     <link rel="icon" type="image/svg+xml" href="assets/img/teranga-mark.svg">
-    <link rel="preload" as="image" href="assets/img/low/moon.jpg">
     <link rel="stylesheet" href="assets/css/tokens.css">
     <link rel="stylesheet" href="assets/css/app.css">
     <link rel="stylesheet" href="assets/css/theme.css">
     <link rel="stylesheet" href="assets/css/theme3.css">
+    <link rel="stylesheet" href="assets/css/surface.css">
     <link rel="stylesheet" href="assets/css/print.css">
+    <!-- Three.js is vendored under assets/vendor/three: no CDN, so the site
+         works offline and on any static host without a network round-trip. -->
     <script type="importmap">
       {
         "imports": {
-          "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
-          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+          "three": "./assets/vendor/three/three.module.js",
+          "three/addons/": "./assets/vendor/three/addons/"
         }
       }
     </script>
@@ -36,14 +38,8 @@
         <img class="loader-logo" src="assets/img/teranga-lunar.svg"
           alt="TerangaLunar — Space &amp; Lunar Missions" width="300" height="72">
         <div class="loader-ring" aria-hidden="true"><span></span></div>
-        <p class="loader-status" id="loader-status">Chargement</p>
-        <ul class="loader-steps">
-          <li data-step="config">Configuration</li>
-          <li data-step="terrain">Relief lunaire mesuré</li>
-          <li data-step="scene">Scène 3D et texture 4K</li>
-        </ul>
-        <div class="loader-bar" aria-hidden="true"><span id="loader-bar"></span></div>
-        <p class="loader-note">Données locales · aucun compte · aucun envoi</p>
+        <p class="loader-line" id="loader-line">Chargement</p>
+        <p class="loader-fallback" id="loader-fallback" hidden></p>
       </div>
     </div>
 
@@ -55,6 +51,21 @@
       <p class="boot">Cette application a besoin de JavaScript pour calculer les positions du Soleil et de la Terre.</p>
     </noscript>
 
+    <!-- If the modules never start (opened from a local file, or a host that
+         does not serve them), say so instead of spinning forever. -->
+    <script>
+      setTimeout(function () {
+        if (window.__bootReady) return;
+        var el = document.getElementById('loader-fallback');
+        if (!el) return;
+        var line = document.getElementById('loader-line');
+        if (line) line.hidden = true;
+        el.hidden = false;
+        el.textContent = location.protocol === 'file:'
+          ? 'Les modules du site ne se chargent pas depuis un fichier local. Ouvrez la version en ligne, ou lancez « node scripts/serve.mjs » puis http://127.0.0.1:4173.'
+          : 'Le chargement a échoué. Rechargez la page (Ctrl+F5) ; si cela persiste, la console du navigateur indique le fichier manquant.';
+      }, 9000);
+    </script>
     <script type="module" src="assets/js/app.js"></script>
   </body>
 </html>

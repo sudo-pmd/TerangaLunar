@@ -114,7 +114,7 @@ export const EXTRA = {
     'learn.openSheet': 'Voir la fiche complète',
     'learn.flatVsRelief': 'Ensoleillement avec relief / horizon plat',
 
-    'sites.kicker': 'Catalogue',
+    'sites.kicker': 'Missions CLPS',
     'sites.title': 'Les sites d’atterrissage',
     'sites.lede': 'Onze points, sept missions.',
     'sites.filterHint': 'Filtrer par opérateur ou par statut.',
@@ -263,7 +263,7 @@ export const EXTRA = {
     'learn.openSheet': 'Open the full sheet',
     'learn.flatVsRelief': 'Sunlight with terrain / flat horizon',
 
-    'sites.kicker': 'Catalogue',
+    'sites.kicker': 'Missions CLPS',
     'sites.title': 'Landing sites',
     'sites.lede': 'Eleven points, seven missions.',
     'sites.filterHint': 'Filter by operator or status.',
@@ -402,4 +402,50 @@ Object.assign(EXTRA.en, {
   'science.terrain.title': 'Terrain comes from the LDEM',
   'science.terrain.body':
     'Horizon masks are read from LDEM_80S_80M, the LOLA south-polar stereographic product (80 m/pixel, 16 bit). The Python pipeline projects each site, samples 30 km of terrain per azimuth and removes lunar curvature. The seven sites outside the footprint keep an analytic profile, labelled as such.',
+});
+
+/* Small globes used as figures on the catalogue and science pages. */
+Object.assign(EXTRA.fr, {
+  'globe.view.label': 'Vue du globe',
+  'globe.view.south': 'Pôle Sud',
+  'globe.view.near': 'Face visible',
+  'globe.view.far': 'Face cachée',
+  'globe.sites.title': 'Où sont les sites',
+  'globe.sites.note': 'Le pôle Sud rassemble les points d’atterrissage CLPS ; les autres servent de repères.',
+  'globe.science.title': 'La Lune maintenant',
+  'globe.science.note': 'Le terminateur au moment où la page s’est affichée.',
+  'globe.subsolar': 'Point subsolaire',
+});
+
+Object.assign(EXTRA.en, {
+  'globe.view.label': 'Globe view',
+  'globe.view.south': 'South pole',
+  'globe.view.near': 'Near side',
+  'globe.view.far': 'Far side',
+  'globe.sites.title': 'Where the sites are',
+  'globe.sites.note': 'The south pole holds the CLPS landing points; the others are reference marks.',
+  'globe.science.title': 'The Moon right now',
+  'globe.science.note': 'The terminator at the moment this page was drawn.',
+  'globe.subsolar': 'Subsolar point',
+});
+
+/* Map page: the side menu and its panels. */
+Object.assign(EXTRA.fr, {
+  'map.rail': 'Sections de la carte',
+  'map.heroHint': 'Touchez le globe pour poser un point · un site s’ouvre au clic',
+  'map.panel.shadow': 'Ombre',
+  'map.panel.probe': 'Point d’étude',
+  'map.panel.sites': 'Sites',
+  'map.panel.orbit': 'Orbite',
+  'map.panel.south': 'Pôle Sud',
+});
+
+Object.assign(EXTRA.en, {
+  'map.rail': 'Map sections',
+  'map.heroHint': 'Tap the globe to drop a point · click a site to open its page',
+  'map.panel.shadow': 'Shadow',
+  'map.panel.probe': 'Study point',
+  'map.panel.sites': 'Sites',
+  'map.panel.orbit': 'Orbit',
+  'map.panel.south': 'South pole',
 });

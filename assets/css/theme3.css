@@ -314,7 +314,7 @@ body[data-route='home'] main {
 
 /* The probe bar already says how to place a point, and the ribbon explains the
    cursor: the generic scene hint would land on top of both. */
-.map-globe .scene-hint {
+.map-globe .scene-hint:not(.is-fallback) {
   display: none;
 }
 
@@ -700,7 +700,7 @@ main .section.map-mid {
   }
 
   main .container {
-    padding-right: 52px;
+    padding-right: 70px;
     padding-left: 16px;
   }
 
@@ -733,10 +733,16 @@ main .section.map-mid {
 
 @media (max-width: 520px) {
   .map-probe {
-    padding: 11px;
+    padding: 16px 58px 12px 14px;
   }
 
-  .probe-out > div {
-    font-size: 0.6875rem;
+  /* Sun, Earth, sunlight state: the horizon note and the coordinates are
+     already in the ribbon and in the inputs. */
+  .map-probe .probe-out > div:nth-child(n + 3) {
+    display: none;
+  }
+
+  .map-probe .probe-out dd {
+    font-size: 0.8125rem;
   }
 }
