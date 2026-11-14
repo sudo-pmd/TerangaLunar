@@ -1146,3 +1146,191 @@ select option {
   text-transform: uppercase;
   color: #8b98ad;
 }
+
+/* ------------------------------------------------------- sites layout */
+
+.sites-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 31%);
+  gap: clamp(18px, 2.6vw, 38px);
+  align-items: start;
+  padding-block: clamp(18px, 3vh, 34px);
+}
+
+.sites-main {
+  min-width: 0;
+}
+
+.sites-aside {
+  position: sticky;
+  top: 18px;
+}
+
+.sites-aside .globe-circle {
+  width: 100%;
+}
+
+@media (max-width: 980px) {
+  .sites-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sites-aside {
+    position: static;
+    order: -1;
+  }
+
+  .sites-aside .globe-circle {
+    width: min(300px, 100%);
+    margin-inline: auto;
+  }
+}
+
+/* ------------------------------------------------------------- links */
+
+/* One link style for the whole site: sand-coloured, a hairline that thickens
+   to amber on hover. No default blue, no underline that collides with the
+   bottom of the text. */
+main a:not(.btn):not(.site-card-link):not(.dock-item):not(.mission-chip):not(.chip) {
+  color: #e6d2a0;
+  text-decoration: none;
+  padding-bottom: 1px;
+  background-image: linear-gradient(to top, rgba(230, 210, 160, 0.4) 0 1px, transparent 1px);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% 100%;
+  transition: color 0.18s ease, background-image 0.18s ease;
+}
+
+main a:not(.btn):not(.site-card-link):not(.dock-item):not(.mission-chip):not(.chip):hover {
+  color: #ffdf9a;
+  background-image: linear-gradient(to top, currentColor 0 1px, transparent 1px);
+}
+
+main a:focus-visible,
+.footer-links a:focus-visible {
+  outline: 2px solid rgba(246, 178, 60, 0.75);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.link-row a,
+.back-link {
+  font-weight: 500;
+}
+
+/* ------------------------------------------- alignment and rhythm pass
+
+   One control height, one gap scale, one label style. Before this, buttons
+   were 45 px, tabs 42 px and number inputs 40 px, and the gaps went 6 / 8 / 12
+   depending on the block. */
+
+main .btn,
+main .seg,
+main select,
+main input:not([type='range']):not([type='checkbox']):not([type='radio']) {
+  box-sizing: border-box;
+  min-height: 44px;
+}
+
+main input[type='number'] {
+  height: 44px;
+  padding-block: 0;
+}
+
+main .seg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 14px;
+  line-height: 1.1;
+}
+
+/* Rows of controls share the same baseline and the same gap. */
+main .control-group,
+main .filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+main .field {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+
+main .field > span,
+main .control-label {
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8b98ad;
+}
+
+main .controls {
+  display: grid;
+  gap: 12px;
+  align-items: start;
+}
+
+.actions-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.actions-inline .btn {
+  flex: 1 1 130px;
+}
+
+/* Headings that sit on top of a block never push their own spacing around. */
+main .section-head h2,
+main .panel-head h2,
+main .probe-head h2 {
+  margin-block: 0 4px;
+}
+
+main .section-head p,
+main .panel-head p,
+main .probe-head p {
+  margin: 0;
+}
+
+/* Same vertical rhythm between stacked blocks, everywhere. */
+main .section + .section,
+main .panel + .panel {
+  margin-top: 16px;
+}
+
+/* Icons and text inside a button line up on the text baseline. */
+main .btn svg,
+main .seg svg {
+  flex: none;
+}
+
+/* The card name stays white, and warms to amber on hover like every link. */
+.site-card-link .site-name {
+  color: #fff;
+}
+
+.site-card-link:hover .site-name,
+.site-card-link:focus-visible .site-name {
+  color: #ffdf9a;
+}
+
+/* The filter block: labels on one line, controls on the next, both flush. */
+.sites-main .filters {
+  margin-block: 12px 16px;
+}
+
+.sites-main .filters .field {
+  min-width: 0;
+}
+
+.sites-main .filters select {
+  width: 100%;
+  min-width: 160px;
+}
