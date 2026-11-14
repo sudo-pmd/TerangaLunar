@@ -116,7 +116,7 @@ export function renderSites(root, ctx) {
     <div class="sites-main">
     <section class="section" aria-labelledby="catalogue-title">
       <header class="section-head">
-        <h2 id="catalogue-title">${esc(t('home.list.title'))}</h2>
+        <h2 id="catalogue-title" class="sr-only">${esc(t('home.list.title'))}</h2>
         <p>${esc(t('sites.filterHint'))}</p>
       </header>
       <div class="filters" role="group" aria-label="${esc(t('home.filter.company'))}">
