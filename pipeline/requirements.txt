@@ -1,0 +1,4 @@
+spiceypy>=6.0
+numpy>=1.26
+astropy>=6.0   # uniquement pour le mode provisoire (sans de440s.bsp)
+pytest>=8.0

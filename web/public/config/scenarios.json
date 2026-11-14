@@ -1,0 +1,197 @@
+{
+  "scenarios": [
+    {
+      "id": "cycle",
+      "icon": "🌗",
+      "title": {
+        "fr": "Le jour et la nuit sur la Lune",
+        "en": "Day and night on the Moon"
+      },
+      "summary": {
+        "fr": "Pourquoi la nuit dure deux semaines presque partout… sauf près du pôle sud.",
+        "en": "Why night lasts two weeks almost everywhere… except near the south pole."
+      },
+      "sections": [
+        {
+          "h": {
+            "fr": "Un jour très long",
+            "en": "A very long day"
+          },
+          "p": {
+            "fr": [
+              "La Lune tourne sur elle-même en 27 jours environ. Pour un observateur posé à sa surface, le Soleil met donc près d'un mois à faire le tour du ciel.",
+              "Résultat : à l'équateur, le jour dure environ deux semaines, puis la nuit dure deux autres semaines. Le [[jour_lunaire|jour lunaire]] fait en tout 29,5 jours terrestres."
+            ],
+            "en": [
+              "The Moon spins about once every 27 days. For someone standing on it, the Sun takes nearly a month to go around the sky.",
+              "So at the equator, daylight lasts about two weeks and night lasts another two. A [[jour_lunaire|lunar day]] is 29.5 Earth days long."
+            ]
+          },
+          "widget": "cycle"
+        },
+        {
+          "h": {
+            "fr": "Et au pôle sud ?",
+            "en": "And at the south pole?"
+          },
+          "p": {
+            "fr": [
+              "L'axe de la Lune est presque droit. Près du pôle, le Soleil ne monte presque pas : il fait le tour de l'horizon, très bas, sans jamais s'élever.",
+              "Un sommet peut alors rester éclairé très longtemps, pendant que le fond d'un cratère reste dans l'ombre. La durée de la [[nuit]] dépend donc beaucoup du relief local."
+            ],
+            "en": [
+              "The Moon's axis is almost upright. Near the pole, the Sun barely climbs: it circles the horizon, very low, and never rises high.",
+              "A mountain top can stay lit for a very long time while a crater floor stays in shadow. The length of the [[nuit|night]] therefore depends a lot on local terrain."
+            ]
+          },
+          "widget": null
+        }
+      ],
+      "questions": [
+        {
+          "q": {
+            "fr": "Pourquoi le jour lunaire dure-t-il bien plus longtemps qu'un jour sur Terre ?",
+            "en": "Why is a lunar day so much longer than an Earth day?"
+          },
+          "a": {
+            "fr": "Parce que la Lune tourne très lentement sur elle-même : un tour complet par rapport au Soleil prend environ 29,5 jours.",
+            "en": "Because the Moon spins very slowly: a full turn relative to the Sun takes about 29.5 days."
+          }
+        },
+        {
+          "q": {
+            "fr": "Pourquoi les ombres sont-elles très longues près du pôle ?",
+            "en": "Why are shadows very long near the pole?"
+          },
+          "a": {
+            "fr": "Le Soleil reste très bas sur l'horizon, donc la lumière arrive presque à plat.",
+            "en": "The Sun stays very low, so light arrives almost flat."
+          }
+        }
+      ]
+    },
+    {
+      "id": "pole",
+      "icon": "⛰️",
+      "title": {
+        "fr": "Pourquoi viser le pôle sud ?",
+        "en": "Why aim for the south pole?"
+      },
+      "summary": {
+        "fr": "Des sommets presque toujours éclairés et des cratères où la glace peut survivre.",
+        "en": "Peaks that are almost always lit and craters where ice may survive."
+      },
+      "sections": [
+        {
+          "h": {
+            "fr": "De la lumière et de la glace, côte à côte",
+            "en": "Light and ice, side by side"
+          },
+          "p": {
+            "fr": [
+              "Au pôle sud, certains sommets reçoivent la lumière du Soleil pendant la plus grande partie de l'année : c'est utile pour produire de l'électricité.",
+              "À quelques kilomètres, des fonds de cratère ne voient jamais le Soleil. Il y fait extrêmement froid, et de la glace d'eau pourrait y être piégée depuis des milliards d'années."
+            ],
+            "en": [
+              "At the south pole, some peaks receive sunlight for most of the year, which is useful for making electricity.",
+              "A few kilometres away, some crater floors never see the Sun. It is extremely cold there, and water ice may have been trapped for billions of years."
+            ]
+          },
+          "widget": "pole"
+        },
+        {
+          "h": {
+            "fr": "Le prix à payer",
+            "en": "The price to pay"
+          },
+          "p": {
+            "fr": [
+              "Avec un Soleil très bas, le [[masque|masque d'horizon]] compte énormément : une colline suffit à cacher le Soleil pendant des jours.",
+              "La Terre est aussi proche de l'horizon, parfois cachée. Il faut vérifier que l'on peut communiquer."
+            ],
+            "en": [
+              "With a very low Sun, the [[masque|horizon mask]] matters a lot: a single hill can hide the Sun for days.",
+              "Earth is also close to the horizon and sometimes hidden. Communication must be checked."
+            ]
+          },
+          "widget": null
+        }
+      ],
+      "questions": [
+        {
+          "q": {
+            "fr": "Pourquoi la glace d'eau ne fond-elle pas au fond de certains cratères ?",
+            "en": "Why does water ice not melt at the bottom of some craters?"
+          },
+          "a": {
+            "fr": "Le Soleil n'y arrive jamais : la température reste très basse.",
+            "en": "The Sun never reaches there, so the temperature stays very low."
+          }
+        },
+        {
+          "q": {
+            "fr": "Quels sont les avantages et les risques d'un site au pôle sud ?",
+            "en": "What are the benefits and risks of a south-pole site?"
+          },
+          "a": {
+            "fr": "Avantages : lumière longue sur les crêtes, glace proche. Risques : nuits longues dans les creux, Terre parfois cachée, ombres très longues.",
+            "en": "Benefits: long light on ridges, nearby ice. Risks: long nights in hollows, Earth sometimes hidden, very long shadows."
+          }
+        }
+      ]
+    },
+    {
+      "id": "delay",
+      "icon": "⏱️",
+      "title": {
+        "fr": "Et si l'atterrissage est retardé ?",
+        "en": "What if the landing is delayed?"
+      },
+      "summary": {
+        "fr": "Quelques jours de retard peuvent changer complètement les conditions.",
+        "en": "A few days' delay can change conditions completely."
+      },
+      "sections": [
+        {
+          "h": {
+            "fr": "Le bon moment compte",
+            "en": "Timing matters"
+          },
+          "p": {
+            "fr": [
+              "Le Soleil et la Terre se déplacent dans le ciel lunaire. Une date légèrement décalée change la lumière reçue et la durée des [[nuit|nuits]].",
+              "Faites glisser le retard ci-dessous pour voir comment le [[score]] et la plus longue nuit évoluent."
+            ],
+            "en": [
+              "The Sun and Earth move across the lunar sky. A slightly shifted date changes the light received and the length of [[nuit|nights]].",
+              "Drag the delay below to see how the [[score]] and the longest night change."
+            ]
+          },
+          "widget": "delay"
+        }
+      ],
+      "questions": [
+        {
+          "q": {
+            "fr": "Pourquoi une mission prévoit-elle souvent plusieurs dates possibles ?",
+            "en": "Why does a mission often plan several possible dates?"
+          },
+          "a": {
+            "fr": "Parce qu'un retard est fréquent et que les conditions de lumière changent d'une date à l'autre.",
+            "en": "Because delays are common and lighting conditions change from date to date."
+          }
+        },
+        {
+          "q": {
+            "fr": "Que regarderiez-vous en premier pour choisir une nouvelle date ?",
+            "en": "What would you look at first to choose a new date?"
+          },
+          "a": {
+            "fr": "La plus longue nuit pendant le séjour, puis la part de soleil, puis les fenêtres de visibilité de la Terre.",
+            "en": "The longest night during the stay, then the sunlit share, then Earth visibility windows."
+          }
+        }
+      ]
+    }
+  ]
+}

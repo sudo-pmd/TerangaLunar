@@ -1,0 +1,9 @@
+/* 2. Remise à zéro minimale */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body, h1, h2, h3, h4, p, ul, ol, dl, dd, figure, fieldset, legend { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
+img, svg, canvas { display: block; max-width: 100%; }
+button, input, select, textarea { font: inherit; color: inherit; }
+fieldset { border: 0; min-width: 0; }
+table { border-collapse: collapse; }

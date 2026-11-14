@@ -1,0 +1,86 @@
+{
+  "nuit": {
+    "fr": "nuit lunaire",
+    "en": "lunar night",
+    "def_fr": "Période pendant laquelle le Soleil reste sous l'horizon (ou caché par le relief) depuis le site.",
+    "def_en": "Period when the Sun stays below the horizon (or hidden by terrain) as seen from the site."
+  },
+  "azimut": {
+    "fr": "azimut",
+    "en": "azimuth",
+    "def_fr": "Direction horizontale mesurée depuis le nord, de 0° à 360° (est = 90°, sud = 180°).",
+    "def_en": "Horizontal direction measured from north, 0° to 360° (east = 90°, south = 180°)."
+  },
+  "ombre": {
+    "fr": "ombre",
+    "en": "shadow",
+    "def_fr": "Zone sombre derrière un objet ; elle pointe à l'opposé du Soleil.",
+    "def_en": "Dark area behind an object; it points away from the Sun."
+  },
+  "rasant": {
+    "fr": "lumière rasante",
+    "en": "grazing light",
+    "def_fr": "Lumière d'un Soleil très bas : les ombres sont très longues, ce qui révèle le relief mais donne peu d'énergie.",
+    "def_en": "Light from a very low Sun: shadows are very long, which reveals terrain but gives little power."
+  },
+  "elevation": {
+    "fr": "hauteur",
+    "en": "elevation",
+    "def_fr": "Angle d'un astre au-dessus de l'horizon : 0° à l'horizon, 90° au zénith.",
+    "def_en": "Angle of a body above the horizon: 0° at the horizon, 90° at the zenith."
+  },
+  "masque": {
+    "fr": "masque d'horizon",
+    "en": "horizon mask",
+    "def_fr": "Pour chaque direction, la hauteur maximale du relief qui cache le ciel.",
+    "def_en": "For each direction, the maximum terrain height angle that hides the sky."
+  },
+  "libration": {
+    "fr": "libration",
+    "en": "libration",
+    "def_fr": "Léger balancement apparent de la Lune, qui fait varier la visibilité de la Terre près du bord de sa face visible.",
+    "def_en": "Slight apparent wobble of the Moon, which changes Earth visibility near the edge of the near side."
+  },
+  "clps": {
+    "fr": "CLPS",
+    "en": "CLPS",
+    "def_fr": "Commercial Lunar Payload Services : programme de la NASA qui achète à des entreprises privées le transport d'instruments vers la Lune.",
+    "def_en": "Commercial Lunar Payload Services: NASA programme buying delivery of instruments to the Moon from private companies."
+  },
+  "jour_lunaire": {
+    "fr": "jour lunaire",
+    "en": "lunar day",
+    "def_fr": "Durée entre deux levers de Soleil au même endroit : environ 29,5 jours terrestres.",
+    "def_en": "Time between two sunrises at the same place: about 29.5 Earth days."
+  },
+  "ephemerides": {
+    "fr": "éphémérides",
+    "en": "ephemerides",
+    "def_fr": "Tables donnant la position des astres à chaque instant.",
+    "def_en": "Tables giving the position of celestial bodies at each instant."
+  },
+  "ldem": {
+    "fr": "modèle d'altitude (LDEM)",
+    "en": "elevation model (LDEM)",
+    "def_fr": "Carte du relief lunaire mesurée par l'altimètre laser LOLA de la sonde LRO.",
+    "def_en": "Map of lunar terrain measured by the LOLA laser altimeter on the LRO probe."
+  },
+  "moon_me": {
+    "fr": "repère MOON_ME",
+    "en": "MOON_ME frame",
+    "def_fr": "Repère attaché à la Lune qui suit sa rotation ; il sert à situer un site par latitude et longitude.",
+    "def_en": "Frame attached to the Moon that follows its rotation; used to place a site by latitude and longitude."
+  },
+  "seuil": {
+    "fr": "seuil",
+    "en": "threshold",
+    "def_fr": "Valeur à atteindre (ou à ne pas dépasser) pour qu'un critère soit jugé respecté.",
+    "def_en": "Value to reach (or not exceed) for a criterion to count as met."
+  },
+  "score": {
+    "fr": "score",
+    "en": "score",
+    "def_fr": "Note de 0 à 100 combinant ensoleillement (énergie) et visibilité de la Terre (communication) selon les poids choisis.",
+    "def_en": "Score from 0 to 100 combining sunlight (energy) and Earth visibility (communication) with the chosen weights."
+  }
+}

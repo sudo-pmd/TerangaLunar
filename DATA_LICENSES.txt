@@ -1,0 +1,5 @@
+Données et ressources tierces (voir aussi web/public/config/sources.json) :
+- NASA/JPL NAIF : noyaux SPICE (de440s, naif0012, pck00011, frame/PCK lunaires) - domaine public NASA.
+- NASA LRO/LOLA : modèle d'altitude LDEM_80S_80M - domaine public NASA (PDS).
+- Textures Lune (LROC) et Terre (Blue Marble) : NASA - usage libre avec mention NASA.
+- Bibliothèques : React, Three.js, react-three-fiber, drei, i18next, d3-scale, html2canvas (licences MIT).

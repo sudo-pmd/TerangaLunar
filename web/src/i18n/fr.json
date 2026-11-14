@@ -1,0 +1,363 @@
+{
+  "app": {
+    "name": "Navigateur de missions lunaires CLPS",
+    "skip": "Aller au contenu",
+    "home": "Accueil",
+    "language": "Langue",
+    "toDark": "Passer au thème sombre",
+    "toLight": "Passer au thème clair"
+  },
+  "nav": {
+    "label": "Navigation principale",
+    "home": "Accueil",
+    "site": "Un site",
+    "compare": "Comparer",
+    "dates": "Meilleures dates",
+    "discover": "Découvrir",
+    "help": "Aide et sources"
+  },
+  "boot": {
+    "loading": "Chargement des données…",
+    "errorTitle": "Impossible de charger les données",
+    "errorHelp": "Vérifiez les fichiers du dossier config/ et data/, puis rechargez la page."
+  },
+  "banner": {
+    "title": "Données provisoires",
+    "provisional": "Les positions du Soleil et de la Terre viennent d'éphémérides approchées (de440s.bsp absent au calcul).",
+    "noRelief": "Le relief lunaire réel n'est pas encore intégré : les horizons sont plats, donc les nuits paraissent plus longues que dans la réalité.",
+    "more": "En savoir plus"
+  },
+  "footer": {
+    "disclaimer": "Outil pédagogique et exploratoire. Ne remplace pas une analyse de mission officielle.",
+    "data": "Données générées par le script v{{v}} le {{date}}",
+    "sources": "Sources et méthode"
+  },
+  "common": {
+    "yes": "oui",
+    "no": "non"
+  },
+  "status": {
+    "atterrie": "Atterrie",
+    "planifiee": "Planifiée",
+    "echec": "Échec",
+    "reference": "Référence"
+  },
+  "compass": {
+    "N": "nord",
+    "NE": "nord-est",
+    "E": "est",
+    "SE": "sud-est",
+    "S": "sud",
+    "SW": "sud-ouest",
+    "W": "ouest",
+    "NW": "nord-ouest"
+  },
+  "verdict": {
+    "ok": "Respecté",
+    "ko": "Non respecté"
+  },
+  "home": {
+    "title": "Où poser un atterrisseur sur la Lune, et quand ?",
+    "tagline": "Explorez la lumière du Soleil, la vue sur la Terre et les nuits lunaires pour les missions commerciales CLPS de la NASA.",
+    "canvasLabel": "Globe lunaire en 3D avec les sites d'atterrissage ; touchez un repère pour le choisir",
+    "hint": "Faites tourner la Lune, puis touchez un repère.",
+    "noWebgl": "L'affichage 3D n'est pas disponible sur cet appareil. Utilisez la liste ci-dessous.",
+    "fallbackAlt": "Photographie de la Lune",
+    "filters": "Filtrer les sites",
+    "company": "Entreprise",
+    "status": "Statut",
+    "year": "Année",
+    "all": "Tous",
+    "sites_one": "{{count}} site",
+    "sites_other": "{{count}} sites",
+    "none": "Aucun site ne correspond à ces filtres.",
+    "nodata": "pas encore de données",
+    "card": "Fiche de la mission",
+    "pick": "Choisissez un site dans la liste ou sur le globe.",
+    "explore": "Explorer ce site",
+    "plan": "Planifier une mission",
+    "discover": "Découvrir en 3 scénarios"
+  },
+  "controls": {
+    "site": "Site d'atterrissage",
+    "date": "Date d'atterrissage",
+    "dateSlider": "Faire glisser la date",
+    "stay": "Durée du séjour",
+    "stay7": "7 jours",
+    "stay14": "14 jours",
+    "stayLunar": "1 jour lunaire (29,5 j)",
+    "stayCustom": "Autre durée",
+    "stayDays": "Nombre de jours",
+    "profile": "Profil",
+    "profile_eng": "Ingénierie",
+    "profile_sci": "Science",
+    "limb": "Compter le bord du disque solaire (+0,27°)",
+    "weights": "Poids du score",
+    "weightsText": "Énergie {{e}} % · Communication {{c}} %",
+    "noData": "Aucune donnée pour ce site."
+  },
+  "shift": {
+    "group": "Décaler la date d'atterrissage",
+    "aria": "Décaler de {{d}} jours",
+    "day_one": "jour",
+    "day_other": "jours",
+    "done": "Nouvelle date : {{date}}",
+    "clamped": "Date limitée à la période calculée."
+  },
+  "share": {
+    "button": "Copier le lien de cette vue",
+    "copied": "Lien copié.",
+    "manual": "Copiez ce lien : {{url}}"
+  },
+  "metrics": {
+    "sun": "Part ensoleillée",
+    "night": "Plus longue nuit",
+    "nightStart": "Début de la nuit",
+    "earthWindows": "Fenêtres de visibilité de la Terre",
+    "earthShare": "Terre visible",
+    "longest": "La plus longue",
+    "score": "Score pondéré",
+    "verdict": "Verdict"
+  },
+  "site": {
+    "unknownTitle": "Site inconnu",
+    "unknown": "Le site « {{id}} » n'existe pas dans la configuration.",
+    "source": "Source",
+    "status": "Statut",
+    "coords": "Coordonnées",
+    "approx": "Coordonnées approximatives : à vérifier avant tout usage.",
+    "noData": "Pas de données calculées pour ce site.",
+    "controls": "Paramètres de la mission",
+    "skyAt": "Le ciel le {{date}}",
+    "resetCursor": "Revenir à la date d'atterrissage",
+    "numbersEng": "Les chiffres clés sur {{days}} jours",
+    "numbersSci": "Les conditions d'observation sur {{days}} jours",
+    "truncated": "Le séjour dépasse la période calculée : les chiffres portent sur la partie disponible.",
+    "sunSub": "{{h}} de soleil sur {{t}}",
+    "nightFrom": "À partir du {{date}}",
+    "nightBefore": "commence avant le séjour",
+    "nightAfter": "se poursuit après le séjour",
+    "noNight": "Aucune nuit pendant le séjour",
+    "windowCount_one": "{{count}} fenêtre",
+    "windowCount_other": "{{count}} fenêtres",
+    "earthLongest": "La plus longue : {{d}} · Terre visible {{p}} % du temps",
+    "noEarth": "La Terre n'est jamais visible depuis ce site.",
+    "listWindows": "Voir les fenêtres",
+    "bars": "Ensoleillement dans le temps",
+    "byMonth": "Par mois",
+    "byDay": "Par jour",
+    "bestDates": "Trouver les meilleures dates",
+    "addCompare": "Ajouter à la comparaison",
+    "recap": "Récapitulatif imprimable"
+  },
+  "sci": {
+    "elev": "Hauteur du Soleil",
+    "az": "Direction du Soleil",
+    "visible": "Visible",
+    "shadow": "Direction de l'ombre",
+    "noShadow": "Pas d'ombre : le Soleil est sous l'horizon",
+    "grazing": "Lumière rasante",
+    "grazingSub": "sur {{t}} de séjour (Soleil sous 5°)",
+    "sunSub": "Part du séjour où le Soleil est visible"
+  },
+  "horizon": {
+    "title": "Vue de l'horizon",
+    "desc": "Vue du ciel depuis le site : le centre est le zénith, le bord est l'horizon.",
+    "sun": "Soleil",
+    "earth": "Terre",
+    "elev": "hauteur",
+    "az": "direction",
+    "state_visible": "visible",
+    "state_masked": "caché par le relief",
+    "state_below": "sous l'horizon",
+    "card_N": "N",
+    "card_E": "E",
+    "card_S": "S",
+    "card_W": "O",
+    "reliefOn": "Le relief réel est affiché.",
+    "reliefOff": "Horizon plat : relief non disponible."
+  },
+  "tl": {
+    "title": "Frise du temps",
+    "aria": "Frise : Soleil visible, Terre visible et ombre au cours du temps",
+    "zoom": "Échelle",
+    "zoom_day": "Jour",
+    "zoom_month": "Mois",
+    "zoom_year": "Année",
+    "legend": "Légende",
+    "legSun": "Soleil visible (jaune)",
+    "legEarth": "Terre visible (bleu)",
+    "legShadow": "Ombre (gris)",
+    "stay": "Séjour",
+    "longestNight": "Plus longue nuit",
+    "overview": "Vue d'ensemble : touchez pour déplacer la fenêtre",
+    "detail": "Fenêtre affichée :",
+    "detailSun": "soleil {{v}} %",
+    "detailEarth": "Terre {{v}} %",
+    "visible": "visible",
+    "hidden": "caché"
+  },
+  "thr": {
+    "title": "Seuils de la mission",
+    "caption": "Chaque critère est comparé à son seuil.",
+    "criterion": "Critère",
+    "threshold": "Seuil",
+    "sun": "Ensoleillement minimal",
+    "night": "Nuit maximale",
+    "earth": "Fenêtre Terre minimale",
+    "days": "jours",
+    "edit": "Modifier le seuil : {{c}}",
+    "cmp_sun": "≥",
+    "cmp_night": "<",
+    "cmp_earth": "≥"
+  },
+  "compare": {
+    "title": "Comparer des plans",
+    "lead": "Placez 2 ou 3 plans côte à côte : un site et une date chacun.",
+    "plans": "Plans à comparer",
+    "plan": "Plan",
+    "add": "Ajouter un plan",
+    "remove": "Retirer",
+    "presetSites": "Comparer 3 sites",
+    "presetDates": "Même site, 3 dates",
+    "reference": "Plan de référence",
+    "table": "Tableau comparatif",
+    "caption": "Chiffres des plans, écart par rapport au plan de référence",
+    "delta": "Écart",
+    "deltaNote": "Écart = plan − référence.",
+    "csv": "Exporter en CSV",
+    "png": "Exporter en image"
+  },
+  "rank": {
+    "title": "Classement des sites pour un atterrissage le {{date}} ({{days}} j)",
+    "caption": "Sites classés par score",
+    "rank": "Rang",
+    "site": "Site",
+    "mission": "Mission",
+    "earthWindow": "Fenêtre Terre la plus longue",
+    "choose": "Choisir",
+    "chooseAria": "Choisir le site {{site}}"
+  },
+  "best": {
+    "title": "Meilleures dates d'atterrissage",
+    "lead": "Une date de départ par jour, avec la même heure UTC. Plus la case est foncée, meilleur est le score.",
+    "settings": "Réglages",
+    "refDate": "Date de référence",
+    "heat": "Carte des scores pour {{site}} (séjour de {{days}} jours)",
+    "top": "Top 5 des dates",
+    "caption": "Cinq meilleures dates d'atterrissage",
+    "date": "Date",
+    "use": "Utiliser cette date",
+    "openSite": "Ouvrir la page du site"
+  },
+  "heat": {
+    "aria": "Carte de chaleur des scores ; {{n}} meilleures dates marquées d'une étoile",
+    "empty": "Pas de données",
+    "low": "Score faible",
+    "mid": "Score moyen",
+    "high": "Score élevé",
+    "note": "Étoile = une des 5 meilleures dates. Points = score faible.",
+    "top": "Meilleure date",
+    "tipScore": "Score {{v}}",
+    "tipSun": "soleil {{v}} %",
+    "tipEarth": "Terre {{v}} %"
+  },
+  "chart": {
+    "day": "j{{d}}",
+    "horizon": "Horizon"
+  },
+  "discover": {
+    "title": "Découvrir",
+    "lead": "Trois histoires courtes, sans jargon, pour comprendre la lumière sur la Lune.",
+    "start": "Commencer",
+    "back": "Retour aux scénarios",
+    "nav": "Navigation des scénarios",
+    "questions": "Pour réfléchir",
+    "showAnswer": "Voir une piste de réponse",
+    "provisionalNote": "Les animations utilisent les données du site ; elles restent qualitatives tant que les données sont provisoires.",
+    "chartLabel": "Hauteur du Soleil au cours du temps, pôle sud et équateur",
+    "slider": "Date",
+    "nowEq": "À l'équateur, le Soleil est à {{v}}° ({{s}}).",
+    "nowPole": "Au pôle sud, il est à {{v}}° ({{s}}).",
+    "nextLunarDay": "Le jour lunaire suivant {{date}}",
+    "delay": "Retard de l'atterrissage",
+    "delayDays_one": "{{count}} jour",
+    "delayDays_other": "{{count}} jours",
+    "delayText": "Prévu le {{a}}, l'atterrissage retardé de {{days}} jours aurait lieu le {{b}}.",
+    "planned": "Date prévue",
+    "delayed": "Date retardée",
+    "seeDates": "Voir les meilleures dates"
+  },
+  "assump": {
+    "title": "Hypothèses et limites",
+    "data": "Données",
+    "dataText": "Script v{{v}} du {{date}} ; repère {{frame}} ; correction de lumière « {{ab}} » ; pas de {{step}} min.",
+    "relief": "Relief",
+    "reliefYes": "Modèle d'altitude LOLA, résolution {{res}} m.",
+    "reliefNo": "Horizon plat (0°) : modèle d'altitude absent.",
+    "options": "Options",
+    "optionsText": "Séjour {{days}} j ; bord du Soleil compté : {{limb}} ; score = {{e}} % énergie + {{c}} % communication.",
+    "provisional": "Données provisoires : éphémérides approchées.",
+    "range": "Période calculée : 2027-2028.",
+    "limitsTitle": "Limites à connaître",
+    "limits": [
+      "Le Soleil est traité comme un disque ponctuel sauf si l'option du bord est activée.",
+      "Le relief est connu à 80 m ; les petits cailloux et le mât de l'atterrisseur ne sont pas modélisés.",
+      "L'énergie réelle dépend de l'orientation des panneaux solaires, que cet outil ne simule pas.",
+      "Les coordonnées de certains sites sont approximatives et doivent être vérifiées."
+    ]
+  },
+  "help": {
+    "title": "Aide, méthode et sources",
+    "lead": "Comment les chiffres sont calculés et d'où viennent les données.",
+    "toc": "Sur cette page",
+    "method": "Méthode",
+    "methodItems": [
+      {
+        "h": "1. Où sont le Soleil et la Terre ?",
+        "p": "Les éphémérides de la NASA (JPL) donnent leurs positions heure par heure, vues depuis chaque site, avec la correction du temps de trajet de la lumière."
+      },
+      {
+        "h": "2. Le relief cache-t-il le ciel ?",
+        "p": "À partir du modèle d'altitude LOLA, on calcule pour 720 directions la hauteur maximale du relief jusqu'à 150 km : c'est le masque d'horizon."
+      },
+      {
+        "h": "3. Visible ou caché ?",
+        "p": "Un astre est visible quand sa hauteur dépasse celle du masque dans sa direction."
+      },
+      {
+        "h": "4. Les chiffres",
+        "p": "On compte les heures de soleil, la plus longue nuit, les fenêtres où la Terre est visible, puis on combine en un score pondéré."
+      }
+    ],
+    "limits": "Limites",
+    "sources": "Sources des données",
+    "glossary": "Glossaire",
+    "add": "Ajouter une mission ou un site",
+    "addText": "Modifiez web/public/config/sites.json puis relancez python pipeline/run_all.py (voir le README).",
+    "version": "Version des données : script v{{v}} du {{date}}, calcul « {{backend}} », fichiers : {{kernels}}."
+  },
+  "sources": {
+    "caption": "Données et logiciels utilisés",
+    "resource": "Ressource",
+    "version": "Version",
+    "date": "Date",
+    "license": "Licence",
+    "link": "Lien",
+    "open": "Ouvrir"
+  },
+  "recap": {
+    "title": "Récapitulatif",
+    "back": "Retour",
+    "print": "Imprimer",
+    "plan": "Plan de mission",
+    "numbers": "Chiffres clés",
+    "notes": "Notes",
+    "notesHint": "Écrivez vos remarques ici.",
+    "notesLocal": "Vos notes restent dans ce navigateur."
+  },
+  "notFound": {
+    "title": "Page introuvable",
+    "back": "Retour à l'accueil"
+  }
+}

@@ -1,0 +1,15 @@
+/* 6. Impression : récapitulatif d'une page A4, noir et blanc lisible */
+@page { size: A4; margin: 15mm; }
+@media print {
+  :root, :root[data-theme='dark'] { --bg: #fff; --surface: #fff; --surface-2: #f1f1f1; --text: #000; --muted: #333; --border: #999; --ok: #000; --ko: #000; --accent: #000; --warn-bg: #fff; --warn-text: #000; }
+  body { background: #fff; color: #000; font-size: 10.5pt; line-height: 1.35; }
+  .site-header, .site-footer, .banner, .skip, .no-print, .actions, nav, .share { display: none !important; }
+  .container, .page { max-width: none; padding: 0; }
+  h1 { font-size: 18pt; } h2 { font-size: 12pt; margin: 8pt 0 3pt; }
+  .recap section { break-inside: avoid; margin-bottom: 6pt; }
+  .badge { border: 1.5pt solid #000; color: #000; }
+  .badge.ko { background: repeating-linear-gradient(135deg, #fff 0 4px, #bbb 4px 5px); }
+  table.data th, table.data td { border-bottom: 0.5pt solid #777; padding: 2pt 4pt; }
+  textarea { border: 0.5pt solid #777; min-height: 0; height: auto; overflow: visible; font-size: 10pt; background: #fff; color: #000; }
+  a { color: #000; text-decoration: none; }
+}

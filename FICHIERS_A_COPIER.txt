@@ -1,0 +1,33 @@
+=====================================================================
+ FICHIERS TROP GROS À COPIER VOUS-MÊME
+=====================================================================
+Racine du projet = le dossier "clps-lunar-browser" (celui qui contient ce fichier).
+
+1) Éphémérides planétaires (~32 Mo)
+   Copier :  de440s.bsp
+   Vers   :  clps-lunar-browser/pipeline/kernels/de440s.bsp
+   Source :  https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de440s.bsp
+
+2) Modèle d'altitude LOLA pôle sud, 80 m (~115 Mo)
+   Copier :  LDEM_80S_80M.IMG   (à côté du .LBL déjà présent)
+   Vers   :  clps-lunar-browser/pipeline/lola/LDEM_80S_80M.IMG
+   Source :  https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/south/
+
+Déjà fournis (ne rien faire) : naif0012.tls, pck00011.tpc, moon_de440_250416.tf,
+moon_pa_de440_200625.bpc, LDEM_80S_80M.LBL, textures de la Lune et de la Terre.
+
+--- Ensuite (Windows PowerShell, depuis la racine du projet) ---
+  python -m venv .venv
+  .\.venv\Scripts\Activate.ps1
+  pip install -r pipeline/requirements.txt
+  python pipeline/horizon.py --check-orientation     # vérifie l'orientation du relief
+  python pipeline/run_all.py                         # régénère web/public/data
+  cd web
+  npm install
+  npm run dev                                        # http://localhost:5173
+  npm run build                                      # site statique dans web/dist
+
+Linux / macOS : source .venv/bin/activate à la place de l'activation PowerShell.
+
+Sans ces deux fichiers l'application fonctionne, mais en mode PROVISOIRE
+(éphémérides approchées, horizons plats) et un bandeau l'indique.

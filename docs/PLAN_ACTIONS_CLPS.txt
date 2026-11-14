@@ -1,0 +1,711 @@
+=====================================================================
+CLPS LUNAR MISSION BROWSER - FEUILLE DE ROUTE EN ACTIONS ELEMENTAIRES
+Hypothese : tous les fichiers (NAIF, LOLA, textures) sont deja fournis.
+Legende : [I] indispensable  [S] souhaitable  [B] bonus
+Chaque ligne = une action. Cocher [ ] au fur et a mesure.
+=====================================================================
+
+
+---------------------------------------------------------------------
+PHASE 0 - PREPARATION DE L'ENVIRONNEMENT (A001-A040)
+---------------------------------------------------------------------
+[ ] A001 Creer le dossier racine "clps-lunar-browser".
+[ ] A002 Initialiser un depot git (git init).
+[ ] A003 Creer le fichier .gitignore (node_modules, dist, .venv, data/raw, *.bsp).
+[ ] A004 Creer le fichier LICENSE.txt (licence MIT pour le code).
+[ ] A005 Creer le fichier README.md vide avec le titre du projet.
+[ ] A006 Creer le sous-dossier "pipeline/" (calculs Python).
+[ ] A007 Creer le sous-dossier "pipeline/kernels/" (fichiers NAIF).
+[ ] A008 Creer le sous-dossier "pipeline/lola/" (relief LDEM 80S).
+[ ] A009 Creer le sous-dossier "pipeline/out/" (sorties brutes).
+[ ] A010 Creer le sous-dossier "web/" (application).
+[ ] A011 Verifier que Python 3.10+ est installe (python --version).
+[ ] A012 Verifier que Node 18+ est installe (node --version).
+[ ] A013 Creer l'environnement virtuel Python (python -m venv .venv).
+[ ] A014 Activer l'environnement virtuel.
+[ ] A015 Creer pipeline/requirements.txt.
+[ ] A016 Ecrire dans requirements.txt : spiceypy.
+[ ] A017 Ecrire dans requirements.txt : numpy.
+[ ] A018 Ecrire dans requirements.txt : pillow.
+[ ] A019 Ecrire dans requirements.txt : rasterio (lecture des .IMG/.LBL) ou gdal.
+[ ] A020 Ecrire dans requirements.txt : pytest.
+[ ] A021 Installer les dependances (pip install -r requirements.txt).
+[ ] A022 Copier de440s.bsp dans pipeline/kernels/.
+[ ] A023 Copier moon_pa_de440_*.bpc dans pipeline/kernels/.
+[ ] A024 Copier moon_de440_*.tf dans pipeline/kernels/.
+[ ] A025 Copier pck00011.tpc dans pipeline/kernels/.
+[ ] A026 Copier naif0012.tls dans pipeline/kernels/.
+[ ] A027 Copier le .IMG et le .LBL LDEM 80S dans pipeline/lola/.
+[ ] A028 Creer pipeline/kernels/meta.tm (meta-kernel listant les 5 fichiers).
+[ ] A029 Dans meta.tm, ajouter la ligne PATH_VALUES et PATH_SYMBOLS.
+[ ] A030 Dans meta.tm, ajouter KERNELS_TO_LOAD dans l'ordre : tls, tpc, tf, bpc, bsp.
+[ ] A031 Creer le projet Vite : npm create vite@latest web -- --template react-ts.
+[ ] A032 Entrer dans web/ et lancer npm install.
+[ ] A033 Installer three, @react-three/fiber, @react-three/drei.
+[ ] A034 Installer d3 et @types/d3.
+[ ] A035 Installer react-router-dom.
+[ ] A036 Installer i18next et react-i18next.
+[ ] A037 Installer vitest et @testing-library/react (tests).
+[ ] A038 Installer html2canvas (export image F-33).
+[ ] A039 Lancer npm run dev et verifier que la page par defaut s'affiche.
+[ ] A040 Premier commit git : "init projet".
+
+
+---------------------------------------------------------------------
+PHASE 1 - FICHIERS DE CONFIGURATION (A041-A075)  [F-80, F-81, NF-09]
+---------------------------------------------------------------------
+[ ] A041 Creer web/public/config/sites.json.
+[ ] A042 Definir le schema d'un site : id, mission, entreprise, nom, lat, lon, source, statut, type.
+[ ] A043 Ouvrir les pages NASA CLPS et relever la liste des missions.
+[ ] A044 Pour chaque mission, relever le nom du site d'atterrissage.
+[ ] A045 Pour chaque site, relever latitude et longitude.
+[ ] A046 Pour chaque site, noter l'URL exacte de la page source.
+[ ] A047 Saisir les entrees dans sites.json (une entree = un objet).
+[ ] A048 Ajouter un site de reference equatorial (id "ref_equateur", type "reference") [B F-73].
+[ ] A049 Valider sites.json avec un validateur JSON (aucune virgule en trop).
+[ ] A050 Creer web/public/config/sources.json.
+[ ] A051 Definir le schema : id, titre, url, version, licence, consulte_le.
+[ ] A052 Ajouter l'entree "naif_de440s".
+[ ] A053 Ajouter l'entree "naif_moon_pa".
+[ ] A054 Ajouter l'entree "naif_moon_fk".
+[ ] A055 Ajouter l'entree "naif_pck00011".
+[ ] A056 Ajouter l'entree "naif_lsk".
+[ ] A057 Ajouter l'entree "lola_ldem80s".
+[ ] A058 Ajouter l'entree "nasa_clps_pages".
+[ ] A059 Ajouter l'entree "texture_moon_svs" (CGI Moon Kit).
+[ ] A060 Ajouter l'entree "texture_earth" (Blue Marble).
+[ ] A061 Renseigner "consulte_le" au format AAAA-MM-JJ pour chaque ressource.
+[ ] A062 Noter la 1re relecture de l'onglet "Ressources" du defi (equipe constituee).
+[ ] A063 Creer web/public/config/seuils.json (valeurs par defaut).
+[ ] A064 Y mettre : ensoleillement_min = 50 (%).
+[ ] A065 Y mettre : nuit_max_jours = 3.
+[ ] A066 Y mettre : fenetre_terre_min_heures = 24.
+[ ] A067 Creer web/public/config/scenarios.json (textes du mode Decouvrir).
+[ ] A068 Creer web/public/config/glossaire.json (terme, definition FR, definition EN).
+[ ] A069 Creer web/public/config/missions.json si les missions sont separees des sites.
+[ ] A070 Creer web/src/lib/config.ts : fonction loadConfig() avec fetch des JSON.
+[ ] A071 Ajouter les types TypeScript Site, Source, Seuils.
+[ ] A072 Ajouter une validation a l'execution (erreur lisible si un champ manque).
+[ ] A073 Tester : supprimer un champ de sites.json, verifier le message d'erreur.
+[ ] A074 Retablir le champ.
+[ ] A075 Commit : "config json".
+
+
+---------------------------------------------------------------------
+PHASE 2 - PIPELINE DE CALCUL SANS RELIEF (A076-A125)  [Section 7]
+---------------------------------------------------------------------
+[ ] A076 Creer pipeline/compute.py.
+[ ] A077 Importer spiceypy, numpy, json, sys.
+[ ] A078 Ecrire la fonction load_kernels() qui charge meta.tm.
+[ ] A079 Ecrire la lecture de web/public/config/sites.json.
+[ ] A080 Definir la date de debut (parametre) et la duree (730 jours).
+[ ] A081 Definir le pas = 3600 s (option 1800 s via argument --step).
+[ ] A082 Convertir la date de debut en temps ephemeride (str2et).
+[ ] A083 Construire le tableau des temps (numpy.arange).
+[ ] A084 Pour un site : convertir lat/lon en position (rayon lunaire 1737.4 km).
+[ ] A085 Utiliser le rayon moyen de la Lune (bodvrd MOON RADII).
+[ ] A086 Calculer le vecteur du site dans le repere MOON_ME (georec).
+[ ] A087 Pour chaque instant : obtenir la position du Soleil avec spkpos, cible SUN, observateur MOON, repere MOON_ME, correction LT+S.
+[ ] A088 Idem pour la Terre (cible EARTH).
+[ ] A089 Soustraire la position du site pour obtenir le vecteur site -> astre.
+[ ] A090 Construire la base locale (Est, Nord, Zenith) au site.
+[ ] A091 Projeter le vecteur sur la base locale.
+[ ] A092 Calculer l'elevation = arcsin(composante zenith / norme).
+[ ] A093 Calculer l'azimut = atan2(Est, Nord) ramene entre 0 et 360.
+[ ] A094 Verifier que l'azimut croit dans le sens horaire (Nord=0, Est=90).
+[ ] A095 Stocker elevation et azimut du Soleil dans un tableau.
+[ ] A096 Stocker elevation et azimut de la Terre dans un tableau.
+[ ] A097 Ecrire un test pytest : au pole sud (lat -90), elevation Soleil <= ~1.6 deg.
+[ ] A098 Ecrire un test pytest : au pole sud, elevation Terre proche de l'horizon.
+[ ] A099 Ecrire un test : au site equatorial, le Soleil monte a plus de 80 deg.
+[ ] A100 Ecrire un test : periode d'un cycle jour-nuit equatorial ~ 29.5 jours.
+[ ] A101 Lancer pytest, corriger jusqu'a ce que tout passe.
+[ ] A102 Ajouter des logs de progression (un print par site).
+[ ] A103 Ajouter un chronometre pour mesurer la duree totale.
+[ ] A104 Executer le calcul sur un seul site de test.
+[ ] A105 Tracer rapidement l'elevation du Soleil (matplotlib, hors livrable) et inspecter.
+[ ] A106 Verifier visuellement l'absence de sauts d'azimut non physiques (0/360 est normal).
+[ ] A107 Executer le calcul sur tous les sites.
+[ ] A108 Sauver les sorties brutes en .npz dans pipeline/out/.
+[ ] A109 Noter la date du calcul et les versions des noyaux (pour F-62).
+[ ] A110 Creer pipeline/meta_run.json avec : date_calcul, pas, debut, fin, noyaux, version script.
+[ ] A111 Gerer l'annee bissextile / la fin de plage sans erreur d'indice.
+[ ] A112 Ajouter l'option --pas-30min et la tester sur un site.
+[ ] A113 Comparer les resultats 60 min et 30 min (ecart faible attendu).
+[ ] A114 Ajouter un argument --sites pour ne recalculer qu'une liste d'ids.
+[ ] A115 Ajouter un argument --debut AAAA-MM-JJ.
+[ ] A116 Ajouter un argument --jours.
+[ ] A117 Documenter ces arguments en commentaire en tete du script.
+[ ] A118 Ajouter une ligne vide entre chaque fonction (lisibilite, PEP8).
+[ ] A119 Ajouter deux lignes vides avant chaque def de niveau racine.
+[ ] A120 Supprimer les espaces en fin de ligne.
+[ ] A121 Ajouter un saut de ligne final au fichier.
+[ ] A122 Relire le script en entier, simplifier les noms de variables.
+[ ] A123 Lancer un linter (ruff ou flake8), corriger les avertissements.
+[ ] A124 Relancer pytest.
+[ ] A125 Commit : "pipeline sans relief".
+
+
+---------------------------------------------------------------------
+PHASE 3 - RELIEF ET MASQUE D'HORIZON (A126-A175)  [F-11, Section 7]
+---------------------------------------------------------------------
+[ ] A126 Creer pipeline/horizon.py.
+[ ] A127 Lire le .LBL pour obtenir : projection, resolution, rayon, offsets (LINE_PROJECTION_OFFSET, SAMPLE_PROJECTION_OFFSET).
+[ ] A128 Ouvrir le .IMG avec rasterio (ou numpy.fromfile avec dtype int16/float32 selon le LBL).
+[ ] A129 Appliquer le facteur d'echelle et l'offset d'altitude du LBL.
+[ ] A130 Convertir en altitudes (m) par rapport au rayon de reference.
+[ ] A131 Ecrire la fonction latlon_to_pixel (projection stereographique polaire sud).
+[ ] A132 Tester latlon_to_pixel avec le pole (-90, 0) : doit tomber au centre de l'image.
+[ ] A133 Tester avec un point connu (ex. lat -89, lon 0) et verifier la distance au centre (~ 30 km).
+[ ] A134 Ecrire pixel_to_latlon (inverse) et verifier l'aller-retour.
+[ ] A135 Pour un site, extraire l'altitude du site (interpolation bilineaire).
+[ ] A136 Ajouter la hauteur de l'atterrisseur / mat (parametre, 2 m par defaut).
+[ ] A137 Definir les azimuts : 0 a 359.5 par pas de 0.5 deg (720 valeurs).
+[ ] A138 Pour chaque azimut, definir un rayon de recherche maximal (ex. 30 km).
+[ ] A139 Echantillonner des points le long du rayon (pas = resolution du MNT).
+[ ] A140 Pour chaque point, calculer la distance d et l'altitude h.
+[ ] A141 Corriger la courbure lunaire : h_apparent = h - d^2 / (2 R).
+[ ] A142 Calculer l'angle d'elevation = arctan((h_apparent - h_site) / d).
+[ ] A143 Garder le maximum le long du rayon = elevation de l'horizon pour cet azimut.
+[ ] A144 Repeter pour les 720 azimuts.
+[ ] A145 Gerer les pixels sans donnee (NaN) : les ignorer.
+[ ] A146 Gerer un site hors zone LDEM 80S (lat > -80) : horizon plat + avertissement.
+[ ] A147 Stocker le masque en degres, arrondi a 0.01 deg.
+[ ] A148 Vectoriser la boucle avec numpy pour accelerer.
+[ ] A149 Mesurer le temps de calcul pour un site.
+[ ] A150 Ecrire un test : masque d'un terrain plat = ~0 partout.
+[ ] A151 Ecrire un test : masque d'une bosse synthetique de 1 km a 1 km = ~45 deg.
+[ ] A152 Ecrire un test : symetrie quand on tourne le MNT synthetique de 90 deg.
+[ ] A153 Lancer les tests, corriger.
+[ ] A154 Calculer les masques pour tous les sites.
+[ ] A155 Tracer un masque en polaire (matplotlib) et verifier la plausibilite.
+[ ] A156 Comparer le masque a une image LROC/Quickmap pour un site (controle visuel).
+[ ] A157 Ajouter un contour "visible" du Soleil (option 0.27 deg) : parametre --bord-soleil.
+[ ] A158 Implementer la visibilite : vrai si elevation_astre > masque(azimut_interpole).
+[ ] A159 Interpoler le masque lineairement entre deux azimuts voisins.
+[ ] A160 Gerer le raccord 359.5 -> 0.
+[ ] A161 Calculer l'etat de visibilite Soleil heure par heure (bool).
+[ ] A162 Calculer l'etat de visibilite Terre heure par heure (bool).
+[ ] A163 Comparer part ensoleillee avec et sans relief (le relief doit la reduire ou la laisser egale).
+[ ] A164 Verifier qu'aucun site n'a une part ensoleillee > sans relief.
+[ ] A165 Verifier que la part ensoleillee est entre 0 et 100 %.
+[ ] A166 Ecrire un test pour ces deux contraintes.
+[ ] A167 Ajouter des commentaires sur les formules (rayon, courbure).
+[ ] A168 Retirer le code mort et les print de debug.
+[ ] A169 Ajouter des espaces/lignes vides entre blocs logiques.
+[ ] A170 Relancer ruff.
+[ ] A171 Relancer pytest.
+[ ] A172 Noter dans meta_run.json : resolution du MNT, rayon max, pas azimutal.
+[ ] A173 Noter la 2e relecture de l'onglet "Ressources" (veille de l'evenement).
+[ ] A174 Mettre a jour sources.json si une ressource a change.
+[ ] A175 Commit : "masque d'horizon".
+
+
+---------------------------------------------------------------------
+PHASE 4 - EXPORT DES DONNEES COMPACTES (A176-A205)  [NF-01, NF-04]
+---------------------------------------------------------------------
+[ ] A176 Creer pipeline/export.py.
+[ ] A177 Choisir le format : fichier binaire int16 par site + petit JSON d'en-tete.
+[ ] A178 Quantifier elevation en centiemes de degre (x100) en int16.
+[ ] A179 Quantifier azimut en centiemes de degre (uint16, 0-35999).
+[ ] A180 Organiser par site : sun_el, sun_az, earth_el, earth_az, masque.
+[ ] A181 Ecrire web/public/data/<id>.bin pour chaque site.
+[ ] A182 Ecrire web/public/data/<id>.json avec l'en-tete (debut, pas, N, facteurs d'echelle, offsets).
+[ ] A183 Ecrire web/public/data/index.json (liste des sites disponibles + meta_run).
+[ ] A184 Mesurer la taille de chaque .bin.
+[ ] A185 Verifier que chaque site < 5 Mo (NF-04).
+[ ] A186 Si depasse : activer la compression gzip cote hebergeur ou reduire la plage.
+[ ] A187 Ecrire un test d'aller-retour : decodage Python = valeurs d'origine (a 0.01 deg pres).
+[ ] A188 Ecrire pipeline/verify_export.py qui relit tous les fichiers et valide leur coherence.
+[ ] A189 Executer verify_export.py.
+[ ] A190 Ecrire dans le README la commande exacte pour tout regenerer.
+[ ] A191 Creer pipeline/Makefile (ou run_all.sh) : kernels -> compute -> horizon -> export.
+[ ] A192 Tester run_all.sh depuis un dossier propre.
+[ ] A193 Mesurer la duree totale de regeneration.
+[ ] A194 Ajouter le fichier pipeline/NOTES.txt (decisions techniques, formules).
+[ ] A195 Ajouter web/public/robots.txt (Allow: /).
+[ ] A196 Ajouter web/public/humans.txt (equipe, outils).
+[ ] A197 Ajouter DATA_LICENSES.txt (licences des donnees NASA/NAIF/LOLA).
+[ ] A198 Ajouter CREDITS.txt (textures, polices, bibliotheques).
+[ ] A199 Verifier que les .txt sont encodes en UTF-8.
+[ ] A200 Verifier que les fins de ligne sont coherentes (LF).
+[ ] A201 Supprimer les gros fichiers bruts du dossier public.
+[ ] A202 Verifier .gitignore pour ne pas committer les .bsp/.IMG.
+[ ] A203 Lancer le build de Vite et verifier la taille de dist/.
+[ ] A204 Verifier que dist/data est bien copie.
+[ ] A205 Commit : "donnees precalculees".
+
+
+---------------------------------------------------------------------
+PHASE 5 - COEUR LOGIQUE COTE NAVIGATEUR (A206-A260)  [F-20..F-23, F-50..F-55]
+---------------------------------------------------------------------
+[ ] A206 Creer web/src/lib/data.ts : chargement d'un site (fetch .json + .bin).
+[ ] A207 Decoder le .bin en Int16Array / Uint16Array.
+[ ] A208 Reconstruire les degres reels (valeur / 100).
+[ ] A209 Mettre en cache les sites deja charges (Map en memoire).
+[ ] A210 Gerer l'etat de chargement et l'erreur reseau.
+[ ] A211 Creer web/src/lib/visibility.ts.
+[ ] A212 Ecrire sunVisible(site, i) : el > masque(az).
+[ ] A213 Ecrire earthVisible(site, i).
+[ ] A214 Precalculer deux tableaux Uint8Array (soleil, terre) a l'ouverture du site.
+[ ] A215 Ecrire dateToIndex(date) et indexToDate(i).
+[ ] A216 Creer web/src/lib/metrics.ts.
+[ ] A217 Ecrire sunFraction(sun, i0, i1) : heures ensoleillees / heures totales [F-20].
+[ ] A218 Ecrire sunFractionByDay(...) : tableau par jour.
+[ ] A219 Ecrire sunFractionByMonth(...) : tableau par mois.
+[ ] A220 Ecrire longestNight(sun, i0, i1) : retourne debut, duree [F-21].
+[ ] A221 Gerer le cas "nuit commencee avant la fenetre" (la tronquer, l'indiquer).
+[ ] A222 Ecrire earthWindows(earth, i0, i1) : liste de {debut, fin, duree} [F-22].
+[ ] A223 Ecrire score(sunFrac, earthFrac, poids) [F-23].
+[ ] A224 Normaliser l'energie sur 100 et la communication sur 100.
+[ ] A225 Poids par defaut 60/40, parametre modifiable.
+[ ] A226 Ecrire thresholdVerdict(metrics, seuils) -> {critere, valeur, seuil, respecte} [F-54].
+[ ] A227 Un seuil est respecte seulement s'il l'est sur toute la duree du sejour.
+[ ] A228 Ecrire stayRange(dateAtterrissage, dureeJours) -> (i0, i1) [F-50].
+[ ] A229 Gerer la duree "jour lunaire complet" = 29.53 jours.
+[ ] A230 Ecrire shiftDate(date, deltaJours) [F-51] avec bornes de la plage calculee.
+[ ] A231 Ecrire bestDates(site, duree, poids) : fenetre glissante [F-52].
+[ ] A232 Optimiser la fenetre glissante avec des sommes cumulees (prefix sums).
+[ ] A233 Retourner la note de chaque date de depart (tableau).
+[ ] A234 Retourner le top 5 trie par note decroissante.
+[ ] A235 Gerer les ex-aequo (ordre stable par date).
+[ ] A236 Ecrire rankSites(date, duree, sites) : classement de tous les sites [F-55].
+[ ] A237 Ecrire comparePlans(planRef, planAlt) : ecart pour chaque chiffre [F-53].
+[ ] A238 Ecart = valeur alternative - valeur de reference (signe conserve).
+[ ] A239 Ecrire scienceView(site, dateHeure) : elevation, azimut, duree sous 5 deg, direction des ombres [F-60].
+[ ] A240 Ombre = azimut Soleil + 180 deg (modulo 360).
+[ ] A241 Ecrire les tests Vitest pour sunFraction (cas simples : tout 1, tout 0, moitie).
+[ ] A242 Tests Vitest pour longestNight (serie connue).
+[ ] A243 Tests Vitest pour earthWindows (deux fenetres distinctes).
+[ ] A244 Tests Vitest pour bestDates : la meilleure >= toutes les autres.
+[ ] A245 Tests Vitest pour comparePlans : ecart = difference exacte.
+[ ] A246 Tests Vitest pour thresholdVerdict : nuit trop longue -> "non respecte".
+[ ] A247 Tests Vitest pour shiftDate : -7, -1, +1, +7, et butees de plage.
+[ ] A248 Tests Vitest pour stayRange avec 14 jours.
+[ ] A249 Lancer npm test, corriger les echecs.
+[ ] A250 Controle manuel : recalculer a la main la part ensoleillee d'une journee, comparer.
+[ ] A251 Controle manuel : sejour de 14 jours, comparer a un calcul independant.
+[ ] A252 Mesurer le temps d'un recalcul complet (cible < 2 s, NF-01).
+[ ] A253 Si trop lent : passer les calculs dans un Web Worker.
+[ ] A254 Creer web/src/state/store.ts (etat : site, date, duree, profil, poids, seuils, plans).
+[ ] A255 Creer web/src/lib/urlState.ts : encoder l'etat dans l'URL (query string) [F-61].
+[ ] A256 Creer la fonction inverse : lire l'URL au chargement.
+[ ] A257 Verifier que l'URL ne contient aucune donnee personnelle [NF-08].
+[ ] A258 Tester : copier l'URL, l'ouvrir dans un autre navigateur, meme vue.
+[ ] A259 Ajouter un test d'aller-retour encode/decode de l'etat.
+[ ] A260 Commit : "coeur logique".
+
+
+---------------------------------------------------------------------
+PHASE 6 - HTML : STRUCTURE ET LES 5 TABLEAUX (A261-A310)
+---------------------------------------------------------------------
+[ ] A261 Creer web/index.html : <!doctype html>, lang="fr", meta charset UTF-8.
+[ ] A262 Ajouter meta viewport (width=device-width, initial-scale=1).
+[ ] A263 Ajouter <title> et meta description.
+[ ] A264 Ajouter le lien vers le favicon.
+[ ] A265 Ajouter <div id="root"></div> et le script principal.
+[ ] A266 Creer web/src/App.tsx avec un <header>, <nav>, <main>, <footer>.
+[ ] A267 Ajouter un lien "Aller au contenu" (skip link) en premier element [NF-05].
+[ ] A268 Creer le composant Header : logo, titre, selecteur FR/EN, lien Aide.
+[ ] A269 Creer le composant Nav : Accueil, Decouvrir, Meilleures dates, Comparer, Aide et Sources.
+[ ] A270 Creer le composant Footer : version des donnees, date du calcul, lien Sources.
+[ ] A271 Configurer react-router : routes /, /site/:id, /comparer, /dates, /decouvrir, /aide.
+
+TABLEAU 1 - Comparaison de sites/plans (page Comparer)
+[ ] A272 Creer le composant ComparisonTable.tsx.
+[ ] A273 Ajouter <table> avec <caption> ("Comparaison des sites sur la meme periode").
+[ ] A274 Ajouter <thead> avec une cellule <th scope="col"> par site/plan.
+[ ] A275 Ajouter les lignes <th scope="row"> : part ensoleillee, plus longue nuit, debut de nuit, fenetres Terre, note globale.
+[ ] A276 Ajouter dans chaque cellule la valeur et, en dessous, l'ecart (+/-) par rapport a la reference.
+[ ] A277 Ajouter la ligne "Verdict" avec libelle texte.
+
+TABLEAU 2 - Classement des sites (F-32 / F-55)
+[ ] A278 Creer RankingTable.tsx.
+[ ] A279 <caption> : "Classement des sites pour la date choisie".
+[ ] A280 Colonnes : rang, site, mission, part ensoleillee, plus longue nuit, fenetres Terre, note.
+[ ] A281 Rendre les en-tetes triables (bouton dans <th>, aria-sort).
+[ ] A282 Ajouter un bouton "Choisir ce site" par ligne.
+
+TABLEAU 3 - Cinq meilleures dates (F-52)
+[ ] A283 Creer BestDatesTable.tsx.
+[ ] A284 <caption> : "Cinq meilleures dates de depart".
+[ ] A285 Colonnes : rang, date de depart, note, part ensoleillee, plus longue nuit.
+[ ] A286 Ajouter un bouton "Utiliser cette date" par ligne.
+
+TABLEAU 4 - Verdict des seuils (F-54)
+[ ] A287 Creer ThresholdTable.tsx.
+[ ] A288 <caption> : "Respect des seuils de contrainte".
+[ ] A289 Colonnes : critere, valeur mesuree, seuil, verdict.
+[ ] A290 Verdict ecrit en toutes lettres : "Respecte" / "Non respecte", avec icone + motif (pas seulement couleur).
+[ ] A291 Ajouter des champs <input type="number"> pour modifier chaque seuil, avec <label>.
+
+TABLEAU 5 - Sources et versions (F-81)
+[ ] A292 Creer SourcesTable.tsx.
+[ ] A293 <caption> : "Ressources utilisees".
+[ ] A294 Colonnes : ressource, version, lien, licence, consultee le.
+[ ] A295 Generer les lignes depuis sources.json (aucune ligne ecrite en dur).
+[ ] A296 Ouvrir les liens avec rel="noopener noreferrer".
+
+AUTRES BLOCS HTML
+[ ] A297 Creer HomePage.tsx : liste des missions, selecteurs date/duree/profil, bouton "Explorer".
+[ ] A298 Creer SitePage.tsx : conteneur horizon, conteneur frise, grille de cartes, boutons de decalage, encadre d'hypotheses, bouton "Copier le lien".
+[ ] A299 Creer StatCard.tsx (titre, valeur, unite, aide contextuelle).
+[ ] A300 Creer ShiftButtons.tsx : 4 boutons (-7, -1, +1, +7) avec aria-label.
+[ ] A301 Creer AssumptionsBox.tsx : version des donnees, date du calcul, options, limites [F-62].
+[ ] A302 Creer ProfileToggle.tsx (Ingenierie / Science) en radiogroup accessible.
+[ ] A303 Creer DatePicker.tsx : <input type="datetime-local"> + curseur <input type="range">.
+[ ] A304 Creer StayPicker.tsx : 7 j, 14 j, jour lunaire complet, personnalise.
+[ ] A305 Creer ScenarioPage.tsx pour le mode Decouvrir.
+[ ] A306 Creer Tooltip.tsx pour le glossaire (focusable au clavier).
+[ ] A307 Creer PrintSummary.tsx : recap d'une page (chiffres, hypotheses, sources, notes).
+[ ] A308 Verifier que chaque page a un seul <h1>, des <h2> ordonnes.
+[ ] A309 Valider le HTML genere (validateur W3C sur la page rendue).
+[ ] A310 Commit : "structure HTML + 5 tableaux".
+
+
+---------------------------------------------------------------------
+PHASE 7 - CSS PAS A PAS (A311-A365)
+---------------------------------------------------------------------
+[ ] A311 Creer web/src/styles/tokens.css : variables CSS (:root).
+[ ] A312 Definir la palette : fond, surface, texte, texte secondaire, bordure.
+[ ] A313 Definir les couleurs de donnees : soleil (jaune), terre (bleu), ombre (gris), accent.
+[ ] A314 Verifier chaque contraste texte/fond >= 4.5:1 (outil de contraste).
+[ ] A315 Definir l'echelle typographique (12, 14, 16, 20, 24, 32 px).
+[ ] A316 Definir l'echelle d'espacement (4, 8, 12, 16, 24, 32, 48 px).
+[ ] A317 Definir les rayons de bordure et les ombres.
+[ ] A318 Choisir une police systeme (ou une police libre auto-hebergee).
+[ ] A319 Creer web/src/styles/reset.css : box-sizing, marges a zero, images fluides.
+[ ] A320 Creer web/src/styles/base.css : body (fond, texte, line-height 1.5).
+[ ] A321 Styliser les titres h1 a h3.
+[ ] A322 Styliser les liens (souligne + etat :hover et :focus-visible).
+[ ] A323 Styliser les boutons (primaire, secondaire, discret).
+[ ] A324 Styliser les champs de formulaire (input, select, range).
+[ ] A325 Ajouter un :focus-visible bien visible (outline 3px) partout [NF-05].
+[ ] A326 Styliser le skip link (visible seulement au focus).
+[ ] A327 Creer web/src/styles/layout.css : conteneur max-width 1200px, centre.
+[ ] A328 Mettre en place une grille CSS pour les cartes (auto-fit, minmax 220px).
+[ ] A329 Styliser le header (sticky, fond, bordure basse).
+[ ] A330 Styliser la nav (flex, wrap sur mobile).
+[ ] A331 Styliser le footer.
+[ ] A332 Creer web/src/styles/components.css.
+[ ] A333 Styliser StatCard (surface, padding, valeur en grand).
+[ ] A334 Styliser les tableaux : border-collapse, padding, ligne d'en-tete, lignes zebrees.
+[ ] A335 Rendre les tableaux defilables horizontalement sur mobile (conteneur overflow-x auto).
+[ ] A336 Fixer la premiere colonne des tableaux (position sticky) sur mobile.
+[ ] A337 Styliser les verdicts : badge avec texte + icone + motif (pas seulement couleur).
+[ ] A338 Styliser ShiftButtons (groupe de 4 boutons egaux).
+[ ] A339 Styliser l'encadre d'hypotheses (bordure gauche d'accent, fond discret).
+[ ] A340 Styliser les infobulles (position, fleche, contraste, apparition au focus).
+[ ] A341 Styliser la carte de chaleur (cases, legende, valeurs au survol).
+[ ] A342 Ajouter des motifs (hachures) a la carte de chaleur pour les valeurs faibles/hautes.
+[ ] A343 Styliser la frise : bandes jaune/bleu/gris + motifs distincts (pointilles, hachures).
+[ ] A344 Styliser la vue d'horizon (cercles, graduations, rose des vents).
+[ ] A345 Styliser la page d'accueil : Lune 3D plein ecran, titre superpose, filtres en bas.
+[ ] A346 Styliser le mode Decouvrir (colonne de lecture 65ch, grands schemas).
+[ ] A347 Styliser la page d'aide (table des matieres a gauche sur grand ecran).
+[ ] A348 Ajouter les media queries : 375px, 600px, 900px, 1200px.
+[ ] A349 Mobile : empiler les cartes sur une colonne.
+[ ] A350 Mobile : boutons et zones tactiles >= 44 px.
+[ ] A351 Mobile : horizon et frise en pleine largeur.
+[ ] A352 Ajouter prefers-reduced-motion : couper la rotation de la Lune et l'intro.
+[ ] A353 Ajouter prefers-color-scheme : theme sombre par defaut, option clair.
+[ ] A354 Creer web/src/styles/print.css.
+[ ] A355 Print : masquer header, nav, boutons ; garder chiffres, hypotheses, sources.
+[ ] A356 Print : forcer une seule page A4, marges 15 mm, noir et blanc lisible.
+[ ] A357 Print : repeter les motifs (pas de dependance a la couleur).
+[ ] A358 Tester l'impression (apercu navigateur) sur A4.
+[ ] A359 Retirer le CSS inutilise.
+[ ] A360 Ajouter des lignes vides entre les regles, et un commentaire par section.
+[ ] A361 Verifier l'ordre des regles (tokens > reset > base > layout > composants > print).
+[ ] A362 Tester chaque page a 375, 768, 1280 px.
+[ ] A363 Tester avec un zoom navigateur a 200 %.
+[ ] A364 Corriger les debordements horizontaux.
+[ ] A365 Commit : "CSS".
+
+
+---------------------------------------------------------------------
+PHASE 8 - VUES GRAPHIQUES (A366-A420)  [F-10..F-14, F-52]
+---------------------------------------------------------------------
+Vue circulaire de l'horizon
+[ ] A366 Creer HorizonView.tsx (SVG responsive via viewBox).
+[ ] A367 Dessiner le cercle exterieur = horizon (elevation 0 deg) ; centre = zenith.
+[ ] A368 Ajouter les cercles d'elevation (15, 30, 60 deg) en traits fins.
+[ ] A369 Ajouter les lettres N, E, S, O (et NE, SE...) autour du cercle.
+[ ] A370 Dessiner le masque de relief comme une silhouette remplie [F-11].
+[ ] A371 Convertir (azimut, elevation) en (x, y) : r = (90 - el) / 90 * R.
+[ ] A372 Placer le Soleil (disque jaune, contour) a l'heure choisie.
+[ ] A373 Placer la Terre (disque bleu, contour) a l'heure choisie.
+[ ] A374 Afficher un libelle texte a cote de chaque astre (accessibilite).
+[ ] A375 Afficher la trace du Soleil sur 24 h (ligne pointillee).
+[ ] A376 Indiquer "masque par le relief" si l'astre est sous le masque (texte).
+[ ] A377 Ajouter un <title> et <desc> SVG, et un resume texte en aria-live.
+[ ] A378 Lier le curseur d'heure a la position des astres.
+Frise du temps
+[ ] A379 Creer Timeline.tsx (D3 scales + SVG ou canvas).
+[ ] A380 Dessiner la piste Soleil (jaune quand visible, gris sinon).
+[ ] A381 Dessiner la piste Terre (bleu quand visible).
+[ ] A382 Dessiner la piste Ombre (gris) pour les periodes sans Soleil.
+[ ] A383 Ajouter les motifs (hachures/pointilles) en plus des couleurs.
+[ ] A384 Ajouter l'axe des temps (graduations jours/mois selon le zoom).
+[ ] A385 Ajouter les boutons de zoom : Jour, Mois, Annee [F-13].
+[ ] A386 Ajouter une mini-vue globale (brush) pour choisir la zone affichee.
+[ ] A387 Afficher le detail de la zone selectionnee sous la frise.
+[ ] A388 Surligner la fenetre du sejour (debut a fin) sur la frise.
+[ ] A389 Marquer la date d'atterrissage (ligne verticale + libelle).
+[ ] A390 Marquer la plus longue nuit (bandeau + libelle).
+[ ] A391 Ajouter le survol/toucher : valeurs precises (date, elevation, azimut, visible oui/non) [F-14].
+[ ] A392 Ajouter la navigation au clavier (fleches = +/- 1 heure, PageUp/Down = +/- 1 jour).
+[ ] A393 Utiliser canvas si plus de 5 000 segments (performance).
+[ ] A394 Mesurer le temps de rendu (cible < 200 ms).
+Carte de chaleur et autres
+[ ] A395 Creer HeatMap.tsx : colonnes = jours du mois, lignes = mois, valeur = note [F-52].
+[ ] A396 Ajouter l'echelle de couleurs + motifs + legende texte.
+[ ] A397 Rendre chaque case cliquable (selectionne la date de depart).
+[ ] A398 Marquer les 5 meilleures cases (cadre epais + etoile).
+[ ] A399 Ajouter une alternative texte : le tableau 3 (meilleures dates).
+[ ] A400 Creer SunBarChart.tsx : part ensoleillee par mois (barres) [F-20].
+[ ] A401 Creer DayBarChart.tsx : part ensoleillee par jour sur le sejour.
+[ ] A402 Ajouter les unites et les valeurs en clair sur les graphiques.
+[ ] A403 Creer ScoreSlider.tsx : poids energie/communication (somme = 100) [F-23].
+[ ] A404 Recalculer la note a chaque deplacement du curseur.
+[ ] A405 Creer ExportButtons.tsx : CSV [F-33].
+[ ] A406 Ecrire la fonction toCSV (separateur ; et BOM UTF-8 pour Excel).
+[ ] A407 Ajouter l'export image (html2canvas) du tableau de comparaison.
+[ ] A408 Tester l'ouverture du CSV dans un tableur (accents corrects).
+[ ] A409 Ajouter des textes alternatifs a tous les graphiques.
+[ ] A410 Ajouter le focus clavier a tous les elements interactifs des graphiques.
+[ ] A411 Tester avec un lecteur d'ecran (NVDA ou VoiceOver) sur une page.
+[ ] A412 Tester chaque graphique en niveaux de gris (capture d'ecran en N&B).
+[ ] A413 Tester avec un simulateur de daltonisme (protanopie, deuteranopie).
+[ ] A414 Corriger les cas ou une information passe seulement par la couleur.
+[ ] A415 Ajouter des tests Vitest/Testing Library pour HorizonView (astre place correctement).
+[ ] A416 Test : Soleil a (az 0, el 0) = en haut du cercle, bord.
+[ ] A417 Test : el 90 = centre exact.
+[ ] A418 Lancer npm test.
+[ ] A419 Corriger les echecs.
+[ ] A420 Commit : "vues graphiques".
+
+
+---------------------------------------------------------------------
+PHASE 9 - PAGES ET FONCTIONS DE PLANIFICATION (A421-A470)
+---------------------------------------------------------------------
+Accueil et Lune 3D
+[ ] A421 Creer MoonScene.tsx (react-three-fiber, Canvas).
+[ ] A422 Charger la texture couleur de la Lune (CGI Moon Kit) sur une sphere.
+[ ] A423 Ajouter la carte d'elevation (displacementMap/bumpMap) legere.
+[ ] A424 Ajouter une lumiere directionnelle = Soleil (effet jour/nuit).
+[ ] A425 Ajouter une rotation lente (desactivee si reduced-motion).
+[ ] A426 Convertir lat/lon des sites en positions 3D sur la sphere.
+[ ] A427 Afficher les sites en points cliquables (hotspots).
+[ ] A428 Au clic, ouvrir une fiche mission (nom, entreprise, statut, coordonnees, lien source, bouton "Explorer ce site").
+[ ] A429 Ajouter une petite Terre en arriere-plan (sphere + texture Blue Marble).
+[ ] A430 Ajouter OrbitControls limites (pas de zoom extreme).
+[ ] A431 Ajouter les filtres : par entreprise, par date, par statut.
+[ ] A432 Ajouter une liste textuelle des sites (alternative accessible au canvas 3D).
+[ ] A433 Charger la scene en lazy loading (React.lazy) pour la rapidite.
+[ ] A434 Ajouter une image fixe de repli si WebGL indisponible.
+[ ] A435 Verifier les performances sur mobile (30 fps minimum).
+Page d'un site
+[ ] A436 Brancher SitePage sur le store (site, date, duree, profil).
+[ ] A437 Afficher les cartes : part ensoleillee, plus longue nuit, fenetres Terre, note.
+[ ] A438 Brancher ShiftButtons : chaque clic met a jour la date et recalcule.
+[ ] A439 Afficher "Profil Science" : hauteur/direction du Soleil, duree d'eclairage rasant, sens des ombres.
+[ ] A440 Afficher "Profil Ingenierie" : energie, nuit, communication, seuils.
+[ ] A441 Brancher le bouton "Copier le lien" (navigator.clipboard + message de confirmation).
+[ ] A442 Afficher la confirmation en texte (aria-live).
+[ ] A443 Ajouter le bouton "Ajouter a la comparaison".
+Comparaison
+[ ] A444 Creer ComparePage.tsx.
+[ ] A445 Permettre le choix de 2 ou 3 sites ou plans (selecteurs).
+[ ] A446 Definir l'un d'eux comme "reference".
+[ ] A447 Afficher le Tableau 1 avec les ecarts.
+[ ] A448 Afficher le Tableau 2 (classement) en dessous.
+[ ] A449 Afficher le Tableau 4 (verdict des seuils).
+[ ] A450 Permettre de comparer deux dates pour un meme site [F-31].
+[ ] A451 Verifier l'alignement des colonnes avec 3 sites (aucun defaut).
+Meilleures dates
+[ ] A452 Creer BestDatesPage.tsx : choix du site, de la duree, des poids.
+[ ] A453 Afficher la carte de chaleur et le Tableau 3.
+[ ] A454 Au clic sur une date, ouvrir la page du site avec cette date.
+[ ] A455 Ajouter "Classer tous les sites pour cette date" [F-55] -> Tableau 2.
+Recapitulatif
+[ ] A456 Creer SummaryPage.tsx / mode impression [F-63].
+[ ] A457 Y mettre : site, date, duree, profil, chiffres, verdicts, hypotheses, sources.
+[ ] A458 Ajouter la zone de notes libre (textarea) [F-64].
+[ ] A459 Sauvegarder les notes dans localStorage (jamais dans l'URL).
+[ ] A460 Inclure les notes dans l'impression.
+[ ] A461 Ajouter le bouton "Imprimer / PDF" (window.print).
+[ ] A462 Tester que le recap tient sur une page A4.
+Aide et Sources
+[ ] A463 Creer HelpPage.tsx : methode de calcul, definitions, limites [F-40].
+[ ] A464 Y expliquer : pas de temps, repere MOON_ME, correction LT+S, masque d'horizon.
+[ ] A465 Y expliquer les limites : pas de thermique, pas de trajectoire, resolution du relief, pas de 1 h.
+[ ] A466 Afficher le Tableau 5 (sources) [F-81].
+[ ] A467 Afficher la version des donnees et la date du calcul depuis meta_run.json.
+[ ] A468 Ajouter la visite guidee au premier lancement [B F-41] (si le temps le permet).
+[ ] A469 Ajouter l'ajout d'un site par lat/lon [B F-04] (si le temps le permet).
+[ ] A470 Commit : "pages de planification".
+
+
+---------------------------------------------------------------------
+PHASE 10 - MODE DECOUVRIR ET LANGUES (A471-A505)  [F-70..F-74, NF-10]
+---------------------------------------------------------------------
+[ ] A471 Rediger les textes du scenario 1 : cycle jour-nuit lunaire.
+[ ] A472 Rediger les textes du scenario 2 : pourquoi le pole sud est strategique.
+[ ] A473 Rediger les textes du scenario 3 : et si l'atterrissage est retarde ?
+[ ] A474 Rediger "Pourquoi une nuit lunaire dure deux semaines ailleurs, mais pas au pole sud".
+[ ] A475 Limiter chaque paragraphe a 3-4 phrases, vocabulaire de collegien.
+[ ] A476 Ecrire les explications : Soleil rasant, ombres longues, cycle de 29,5 jours, libration, relief.
+[ ] A477 Creer un schema SVG pour chaque notion (5 schemas).
+[ ] A478 Ajouter un curseur de date interactif dans chaque scenario.
+[ ] A479 Ajouter la comparaison pole sud / site equatorial [B F-73].
+[ ] A480 Ajouter 2-3 questions de reflexion a la fin de chaque scenario [B F-74].
+[ ] A481 Ecrire les reponses attendues (affichees au clic).
+[ ] A482 Remplir glossaire.json (azimut, elevation, masque d'horizon, libration, nuit lunaire...).
+[ ] A483 Brancher les infobulles sur chaque terme technique [F-72].
+[ ] A484 Creer web/src/i18n/fr.json et en.json.
+[ ] A485 Extraire tous les textes de l'interface dans ces fichiers.
+[ ] A486 Traduire en anglais chaque cle.
+[ ] A487 Brancher le selecteur de langue et memoriser le choix (localStorage).
+[ ] A488 Mettre a jour l'attribut <html lang> au changement de langue.
+[ ] A489 Formater dates et nombres selon la langue (Intl).
+[ ] A490 Verifier l'absence de texte en dur dans les composants.
+[ ] A491 Test de lisibilite : faire lire le scenario 1 a une personne non specialiste.
+[ ] A492 Idem avec une 2e personne.
+[ ] A493 Idem avec une 3e personne.
+[ ] A494 Noter les points de blocage, reecrire les passages flous.
+[ ] A495 Refaire le test sur le passage reecrit.
+[ ] A496 Verifier que le scenario se comprend sans aide (critere section 10).
+[ ] A497 Verifier les textes FR : accents, typographie, ponctuation.
+[ ] A498 Verifier les textes EN : orthographe.
+[ ] A499 Ajouter une ligne vide entre les blocs de texte dans les JSON de scenarios (lisibilite).
+[ ] A500 Ajouter une version .txt des scenarios (docs/scenarios.txt) pour relecture hors application.
+[ ] A501 Verifier l'encodage UTF-8 de ce .txt.
+[ ] A502 Relire l'onglet "Ressources" du defi (3e passage, matin du premier jour) [section 6].
+[ ] A503 Mettre a jour sources.json si besoin.
+[ ] A504 Verifier que chaque ressource utilisee figure dans sources.json.
+[ ] A505 Commit : "Decouvrir + i18n".
+
+
+---------------------------------------------------------------------
+PHASE 11 - TESTS, BUGS ET VERIFICATIONS (A506-A560)  [Section 10]
+---------------------------------------------------------------------
+Verifications scientifiques
+[ ] A506 Choisir 3 dates et 2 sites de test.
+[ ] A507 Relever l'elevation du Soleil dans NASA Moon Trek pour ces 6 cas.
+[ ] A508 Relever la meme valeur dans LRO Quickmap.
+[ ] A509 Comparer avec notre application : ecart < 0.5 deg.
+[ ] A510 Si ecart trop grand : verifier repere MOON_ME, correction LT+S, conversion lat/lon, heure UTC vs TDB.
+[ ] A511 Corriger puis relancer la comparaison.
+[ ] A512 Verifier l'ordre de grandeur : pole sud sans relief, Soleil <= ~1.6 deg.
+[ ] A513 Verifier que la Terre reste pres de l'horizon au pole.
+[ ] A514 Verifier a la main la part ensoleillee d'une journee (24 valeurs).
+[ ] A515 Verifier qu'un sejour de 14 jours change bien les chiffres par rapport a la periode complete.
+[ ] A516 Verifier ce resultat a la main.
+[ ] A517 Verifier que la meilleure date proposee a une note >= a 5 autres dates testees a la main.
+[ ] A518 Verifier que l'ecart plan ref / plan alt = difference exacte des chiffres.
+[ ] A519 Verifier qu'un site depassant la nuit maximale est "non respecte" en toutes lettres.
+Verifications fonctionnelles
+[ ] A520 Changer de site 20 fois : aucune erreur console.
+[ ] A521 Decaler la date de -7, -1, +1, +7 : recalcul immediat.
+[ ] A522 Decaler au-dela de la plage : message clair, pas de plantage.
+[ ] A523 Changer la duree du sejour : tous les chiffres suivent.
+[ ] A524 Changer de profil Science/Ingenierie : contenu adapte, etat conserve.
+[ ] A525 Changer les poids : la note change, le classement aussi.
+[ ] A526 Modifier un seuil : le verdict change en direct.
+[ ] A527 Copier le lien, l'ouvrir dans un navigateur prive : meme vue.
+[ ] A528 Ouvrir le lien dans un autre navigateur (Chrome/Firefox/Safari).
+[ ] A529 Afficher 3 sites en comparaison : pas de defaut d'affichage.
+[ ] A530 Mesurer : changement de site, de date, de plan < 2 s (NF-01).
+[ ] A531 Tester avec un reseau lent (throttling 3G) : le chargement reste utilisable.
+Chasse aux bugs
+[ ] A532 Tester les cas limites : date de debut exacte de la plage.
+[ ] A533 Tester la date de fin exacte de la plage.
+[ ] A534 Tester un sejour qui depasse la fin de la plage.
+[ ] A535 Tester un site sans donnees de relief (horizon plat + message).
+[ ] A536 Tester un id de site inconnu dans l'URL (page 404 propre).
+[ ] A537 Tester une URL avec parametres invalides (valeurs par defaut).
+[ ] A538 Tester un sites.json avec une entree supplementaire : le site apparait sans toucher au code [NF-09].
+[ ] A539 Tester un sources.json avec une ressource en plus : elle apparait dans le Tableau 5.
+[ ] A540 Tester le fuseau horaire (UTC partout, aucun decalage d'heure).
+[ ] A541 Tester le passage heure d'ete/hiver du navigateur (aucun effet attendu).
+[ ] A542 Tester le changement de langue sur chaque page.
+[ ] A543 Tester le rechargement de page (F5) sur chaque route.
+[ ] A544 Configurer le fallback SPA (404.html -> index.html ou HashRouter) pour l'hebergement statique.
+[ ] A545 Tester le retour arriere du navigateur.
+[ ] A546 Tester la rotation du telephone.
+[ ] A547 Tester sur ecran 375 px de large : toutes les pages utilisables.
+[ ] A548 Tester sur un vrai telephone (Android et iOS si possible).
+[ ] A549 Corriger les bugs trouves, un commit par correction.
+Accessibilite et qualite
+[ ] A550 Naviguer toute l'application au clavier uniquement (Tab, Entree, Espace, fleches).
+[ ] A551 Verifier l'ordre de tabulation logique.
+[ ] A552 Verifier qu'aucun piege au clavier n'existe (3D, modales).
+[ ] A553 Lancer Lighthouse (accessibilite >= 95, performance >= 85).
+[ ] A554 Lancer axe DevTools et corriger les alertes.
+[ ] A555 Verifier les textes alternatifs de toutes les images.
+[ ] A556 Verifier le contraste de toutes les couleurs (tokens).
+[ ] A557 Verifier que les infobulles sont lisibles au clavier.
+[ ] A558 Verifier que l'information ne passe jamais uniquement par la couleur.
+[ ] A559 Lancer l'ensemble : pytest + npm test + build.
+[ ] A560 Commit : "tests et corrections".
+
+
+---------------------------------------------------------------------
+PHASE 12 - FINITIONS, LIVRAISON, DEPLOIEMENT (A561-A600)  [Section 11]
+---------------------------------------------------------------------
+[ ] A561 Relire tous les fichiers pour supprimer les espaces en fin de ligne.
+[ ] A562 Verifier les lignes vides superflues (max 2 consecutives).
+[ ] A563 Ajouter les lignes vides de respiration entre sections de code/texte.
+[ ] A564 Verifier les noms de fichiers et l'arborescence finale.
+[ ] A565 Ecrire le README complet : presentation, captures, installation.
+[ ] A566 README : section "Regenerer les donnees" pas a pas [NF-06].
+[ ] A567 README : section "Ajouter une mission/un site/une ressource" [NF-09].
+[ ] A568 README : section "Deploiement gratuit" (GitHub Pages/Netlify).
+[ ] A569 README : section "Limites connues".
+[ ] A570 README : sources et licences [NF-07].
+[ ] A571 Ecrire le resume d'une page du projet (methode, sources, limites).
+[ ] A572 Lancer npm run build.
+[ ] A573 Tester le build en local (npm run preview).
+[ ] A574 Configurer le "base" de Vite pour le sous-chemin d'hebergement.
+[ ] A575 Deployer sur GitHub Pages ou Netlify.
+[ ] A576 Tester l'URL publique sur ordinateur.
+[ ] A577 Tester l'URL publique sur mobile.
+[ ] A578 Tester un lien partage depuis l'URL publique.
+[ ] A579 Ecrire le script de la video de 2 minutes (3 usages).
+[ ] A580 Scene 1 (40 s) : coordination science/ingenierie via un lien partage.
+[ ] A581 Scene 2 (40 s) : retard de calendrier, decalage de 10 jours, comparaison, verdict, recap.
+[ ] A582 Scene 3 (40 s) : mode Decouvrir pour un eleve.
+[ ] A583 Enregistrer l'ecran, monter, ajouter des sous-titres.
+[ ] A584 Verifier que la video fait 2 minutes maximum.
+[ ] A585 Relire une derniere fois l'onglet "Ressources" (matin du 2e jour).
+[ ] A586 Confirmer que chaque ressource utilisee est dans sources.json.
+[ ] A587 Parcourir la checklist des fonctions : F-01 a F-81, cocher chaque I, puis S, puis B.
+[ ] A588 Parcourir la checklist NF-01 a NF-10.
+[ ] A589 Parcourir le tableau de la section 10 ligne par ligne.
+[ ] A590 Corriger les derniers ecarts.
+[ ] A591 Taguer la version v1.0 dans git.
+[ ] A592 Preparer l'archive ZIP du depot (sans node_modules ni gros fichiers bruts).
+[ ] A593 Verifier la taille de l'archive.
+[ ] A594 Tester la regeneration complete depuis un clone propre.
+[ ] A595 Preparer la liste des liens de rendu : application, depot, video, resume.
+[ ] A596 Faire relire le resume par une personne exterieure.
+[ ] A597 Soumettre les livrables.
+[ ] A598 Archiver les fichiers NAIF/LOLA hors du depot.
+[ ] A599 Noter les ameliorations restantes dans docs/ROADMAP.txt.
+[ ] A600 Fin du projet.
+
+
+=====================================================================
+AMELIORATIONS POSSIBLES APRES v1.0
+=====================================================================
+- Vue 3D du site avec relief reel (F-15).
+- Prise en compte du diametre apparent du Soleil, 0,27 deg (bord superieur).
+- Pas de 30 minutes en production.
+- Ajout de sites personnalises par lat/lon (F-04).
+- Visite guidee au premier lancement (F-41).
+- Animation d'intro Terre -> Lune avec bouton "Passer".
+- PWA hors ligne.
+- Export PDF natif du recapitulatif.
+- Tests automatises de bout en bout (Playwright).
+=====================================================================

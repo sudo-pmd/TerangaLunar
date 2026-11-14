@@ -1,0 +1,4 @@
+Code source : licence MIT. Copyright (c) 2026 équipe Teranga Lunar : NASA Space Apps.
+Ce projet Teranga Lunar est distribué sous la licence Apache 2.0. 
+Vous êtes autorisé à l'utiliser, le copier, le modifier et le distribuer (y compris à des fins commerciales), sous réserve de conserver les mentions de droits d'auteur et de licence d'origine. 
+Le logiciel est fourni sans aucune garantie.

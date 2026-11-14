@@ -1,0 +1,18 @@
+=====================================================================
+ COPIEZ ICI LE FICHIER :   LDEM_80S_80M.IMG     (environ 115 Mo)
+=====================================================================
+
+Chemin final attendu, à partir de la racine du projet :
+
+    clps-lunar-browser/pipeline/lola/LDEM_80S_80M.IMG
+
+Le fichier d'étiquette LDEM_80S_80M.LBL est déjà présent dans ce dossier.
+
+Où le télécharger (PDS Geosciences Node, produits LOLA GDR polaires, sud) :
+    https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/south/
+
+Le .IMG et le .LBL doivent porter exactement le même nom (hors extension).
+
+Sans ce fichier, tous les horizons sont plats (0°) et l'application l'indique.
+Après avoir copié le fichier, relancez :  python pipeline/run_all.py
+Pour vérifier l'orientation de l'image :  python pipeline/horizon.py --check-orientation

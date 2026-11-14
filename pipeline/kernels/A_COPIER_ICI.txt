@@ -1,0 +1,20 @@
+=====================================================================
+ COPIEZ ICI LE FICHIER :   de440s.bsp        (environ 32 Mo)
+=====================================================================
+
+Chemin final attendu, à partir de la racine du projet :
+
+    clps-lunar-browser/pipeline/kernels/de440s.bsp
+
+Où le télécharger :
+    https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de440s.bsp
+
+Déjà présents dans ce dossier (ne rien faire) :
+    naif0012.tls
+    pck00011.tpc
+    moon_de440_250416.tf
+    moon_pa_de440_200625.bpc
+
+Sans de440s.bsp, le calcul fonctionne en mode PROVISOIRE (éphémérides approchées
+d'astropy) et l'application affiche un bandeau « données provisoires ».
+Après avoir copié le fichier, relancez :  python pipeline/run_all.py

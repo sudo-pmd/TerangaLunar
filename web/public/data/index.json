@@ -1,0 +1,90 @@
+{
+ "generated": "2026-11-14T09:02Z",
+ "start": "2027-01-01T00:00:00Z",
+ "days": 731,
+ "step_s": 3600,
+ "n": 17544,
+ "backend": "spice",
+ "provisional": false,
+ "frame": "MOON_ME",
+ "abcorr": "LT+S",
+ "radius_km": 1737.4,
+ "kernels": [
+  "naif0012.tls",
+  "pck00011.tpc",
+  "moon_de440_250416.tf",
+  "moon_pa_de440_200625.bpc",
+  "de440s.bsp"
+ ],
+ "script_version": "1.0.0",
+ "horizon": {
+  "mast_m": 2.0,
+  "dmax_km": 150.0,
+  "az_step_deg": 0.5,
+  "source": "LRO LOLA LDEM_80S_80M",
+  "resolution_m": 80.0,
+  "orient": 1
+ },
+ "sites": [
+  {
+   "id": "ref_pole",
+   "file": "ref_pole.bin",
+   "relief": true,
+   "bytes": 141792
+  },
+  {
+   "id": "im1_malapert_a",
+   "file": "im1_malapert_a.bin",
+   "relief": true,
+   "bytes": 141792
+  },
+  {
+   "id": "im2_mons_mouton",
+   "file": "im2_mons_mouton.bin",
+   "relief": true,
+   "bytes": 141792
+  },
+  {
+   "id": "griffin1_nobile",
+   "file": "griffin1_nobile.bin",
+   "relief": true,
+   "bytes": 141792
+  },
+  {
+   "id": "bluemoon_mk1_shackleton",
+   "file": "bluemoon_mk1_shackleton.bin",
+   "relief": true,
+   "bytes": 141792
+  },
+  {
+   "id": "blueghost1_crisium",
+   "file": "blueghost1_crisium.bin",
+   "relief": false,
+   "bytes": 141792
+  },
+  {
+   "id": "im3_reiner_gamma",
+   "file": "im3_reiner_gamma.bin",
+   "relief": false,
+   "bytes": 141792
+  },
+  {
+   "id": "apex1_schrodinger",
+   "file": "apex1_schrodinger.bin",
+   "relief": false,
+   "bytes": 141792
+  },
+  {
+   "id": "blueghost3_gruithuisen",
+   "file": "blueghost3_gruithuisen.bin",
+   "relief": false,
+   "bytes": 141792
+  },
+  {
+   "id": "ref_equateur",
+   "file": "ref_equateur.bin",
+   "relief": false,
+   "bytes": 141792
+  }
+ ]
+}
