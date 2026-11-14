@@ -57,16 +57,22 @@ export function validateConfig({ sites, sources, seuils }) {
 }
 
 export async function loadConfig() {
-  const [sites, sources, seuils, scenarios, glossaire] = await Promise.all([
+  const [sites, sources, seuils, scenarios, glossaire, terrain] = await Promise.all([
     loadJson('data/sites.json'),
     loadJson('data/sources.json'),
     loadJson('data/seuils.json'),
     loadJson('data/scenarios.json'),
     loadJson('data/glossaire.json'),
+    // Measured terrain is optional: without it every site keeps the analytic
+    // envelope from sites.json, and the interface says so.
+    loadJson('data/terrain.json').catch(() => null),
   ]);
   validateConfig({ sites, sources, seuils });
   const byId = new Map(sites.sites.map((site) => [site.id, site]));
-  return { sites: sites.sites, meta: sites, sources: sources.sources, seuils, scenarios, glossaire, byId };
+  return {
+    sites: sites.sites, meta: sites, sources: sources.sources, seuils,
+    scenarios, glossaire, terrain, byId,
+  };
 }
 
 export function getSite(config, id) {

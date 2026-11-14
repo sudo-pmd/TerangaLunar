@@ -14,7 +14,7 @@ import { siteGeometry } from './ephemeris.js';
 import { horizonSvg, timelineSvg, heatmapSvg, monthlyBarsSvg, escapeXml as esc } from './charts.js';
 import { mountMoon } from './moon3d.js';
 import { toUtcInput, fromUtcInput } from './state.js';
-import { horizonProfile } from './horizon.js';
+import { horizonProfile, isMeasured } from './horizon.js';
 import { ensurePrecomputed } from './precomputed.js';
 
 const YEAR_SAMPLES = 366 * 24 + 1;
@@ -76,16 +76,18 @@ export function renderHome(root, ctx) {
 
   // The landing page is the Moon. Everything else is one gesture away, in the
   // dock: no paragraphs, no statistics, no cards.
+  // No title block, no introduction button: the Moon is the page, and the dock
+  // already names every section. The h1 stays for screen readers and search.
   root.innerHTML = `
     <section class="stage" aria-labelledby="stage-title">
+      <h1 id="stage-title" class="sr-only">${esc(t('home.hero.title'))}</h1>
       <div class="stage-globe" id="hero-scene" role="img"
         aria-label="${esc(t('home.scene.alt'))}"></div>
-      <div class="stage-overlay">
+      <div class="stage-brand">
         <img class="stage-logo" src="assets/img/teranga-lunar.svg"
           alt="TerangaLunar — Space &amp; Lunar Missions" width="300" height="72" decoding="async">
-        <h1 id="stage-title" class="stage-title">${esc(t('home.hero.title'))}</h1>
       </div>
-      <button type="button" class="stage-skip" id="skip-intro">${esc(t('home.scene.skip'))}</button>
+      <p class="stage-hint mono">${esc(t('home.scene.hint'))}</p>
     </section>`;
 
   let scene = null;
@@ -107,7 +109,6 @@ export function renderHome(root, ctx) {
       return;
     }
     scene = api;
-    root.querySelector('#skip-intro').addEventListener('click', () => scene.skipIntro());
   });
 
   return () => {
@@ -548,7 +549,7 @@ function assumptionsBox(config, site, series) {
       <div><dt>${esc(t('assume.computed'))}</dt><dd class="mono">${esc(config.meta.computed || config.meta.version)}</dd></div>
       <div><dt>${esc(t('assume.frame'))}</dt><dd class="mono">${esc(config.meta.frame)}</dd></div>
       <div><dt>${esc(t('assume.step'))}</dt><dd class="mono">1 ${esc(t('ui.hours'))}</dd></div>
-      <div><dt>${esc(t('assume.terrain'))}</dt><dd>${esc(t('assume.terrainValue'))}</dd></div>
+      <div><dt>${esc(t('assume.terrain'))}</dt><dd>${esc(isMeasured(site.id) ? t('assume.terrainLola') : t('assume.terrainValue'))}</dd></div>
       <div><dt>${esc(t('assume.ephem'))}</dt><dd>${esc(series && series.ephemeris === 'spice' ? t('assume.ephemSpice') : t('assume.ephemValue'))}</dd></div>
     </dl>
     <p class="panel-note">${esc(t('assume.model'))}${site.type === 'reference' ? '' : ''}</p>

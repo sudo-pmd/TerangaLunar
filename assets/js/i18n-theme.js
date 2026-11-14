@@ -308,3 +308,98 @@ export const EXTRA = {
     'footer.note2': 'Open project: no sign-up, no personal data, everything is computed in the browser.',
   },
 };
+
+/* Loading screen, free study points, the Sun–Earth–Moon diagram and the LOLA
+   terrain table. Kept in one block because they arrived together and share
+   their vocabulary. */
+Object.assign(EXTRA.fr, {
+  'boot.loading': 'Chargement',
+  'boot.config': 'Configuration',
+  'boot.terrain': 'Relief lunaire mesuré',
+  'boot.scene': 'Scène 3D et texture 4K',
+  'boot.ready': 'Prêt',
+  'boot.note': 'Données locales · aucun compte · aucun envoi',
+  'boot.alt': 'TerangaLunar, chargement en cours',
+
+  'dock.lang': 'Langue de l’interface',
+
+  'map.probe.title': 'Point d’étude',
+  'map.probe.lede': 'Une latitude, une longitude — ou un clic sur la Lune.',
+  'map.probe.lat': 'Latitude',
+  'map.probe.lon': 'Longitude',
+  'map.probe.place': 'Poser le point',
+  'map.probe.clear': 'Effacer',
+  'map.probe.sun': 'Soleil',
+  'map.probe.earth': 'Terre',
+  'map.probe.relief': 'Horizon',
+  'map.probe.elev': 'Altitude',
+  'map.probe.none': 'Touchez le globe ou saisissez des coordonnées.',
+  'map.probe.lit': 'Au Soleil',
+  'map.probe.shadow': 'Dans l’ombre',
+  'map.probe.flat': 'profil plat (hors LDEM)',
+  'map.probe.hint': 'Cliquez le globe pour poser un point',
+
+  'map.orbit.title': 'Soleil, Terre, Lune',
+  'map.orbit.lede': 'Rayons réels, distances compressées. Faites glisser la Lune : l’ombre suit.',
+  'map.south.title': 'Le pôle Sud, vu du dessous',
+  'map.south.lede': 'Le même globe, caméra au sud.',
+  'map.window': 'Fenêtre',
+  'map.shadow': 'Ombre',
+  'map.zoom': 'Molette : approcher la surface',
+
+  'terrain.title': 'Relief mesuré',
+  'terrain.measured': 'Masque d’horizon LOLA, 80 m/pixel',
+  'terrain.synthetic': 'Profil analytique (hors empreinte du LDEM)',
+
+  'assume.terrainLola': 'Masque d’horizon mesuré : LOLA LDEM 80S, 80 m/pixel, courbure lunaire comprise.',
+
+  'science.terrain.title': 'Le relief vient du LDEM',
+  'science.terrain.body':
+    'Les masques d’horizon sont lus dans LDEM_80S_80M, produit stéréographique polaire sud de LOLA (80 m/pixel, 16 bits). Le pipeline Python projette chaque site, échantillonne 30 km de terrain par azimut et retire la courbure lunaire. Les sept sites hors empreinte gardent un profil analytique, signalé comme tel.',
+});
+
+Object.assign(EXTRA.en, {
+  'boot.loading': 'Loading',
+  'boot.config': 'Configuration',
+  'boot.terrain': 'Measured lunar terrain',
+  'boot.scene': '3D scene and 4K texture',
+  'boot.ready': 'Ready',
+  'boot.note': 'Local data · no account · nothing sent',
+  'boot.alt': 'TerangaLunar, loading',
+
+  'dock.lang': 'Interface language',
+
+  'map.probe.title': 'Study point',
+  'map.probe.lede': 'A latitude, a longitude — or a click on the Moon.',
+  'map.probe.lat': 'Latitude',
+  'map.probe.lon': 'Longitude',
+  'map.probe.place': 'Place the point',
+  'map.probe.clear': 'Clear',
+  'map.probe.sun': 'Sun',
+  'map.probe.earth': 'Earth',
+  'map.probe.relief': 'Horizon',
+  'map.probe.elev': 'Elevation',
+  'map.probe.none': 'Touch the globe or type coordinates.',
+  'map.probe.lit': 'In sunlight',
+  'map.probe.shadow': 'In shadow',
+  'map.probe.flat': 'flat profile (outside LDEM)',
+  'map.probe.hint': 'Click the globe to place a point',
+
+  'map.orbit.title': 'Sun, Earth, Moon',
+  'map.orbit.lede': 'True radii, compressed distances. Drag the Moon: the shadow follows.',
+  'map.south.title': 'The south pole, seen from below',
+  'map.south.lede': 'The same globe, camera under the pole.',
+  'map.window': 'Window',
+  'map.shadow': 'Shadow',
+  'map.zoom': 'Scroll to approach the surface',
+
+  'terrain.title': 'Measured terrain',
+  'terrain.measured': 'LOLA horizon mask, 80 m/pixel',
+  'terrain.synthetic': 'Analytic profile (outside the LDEM footprint)',
+
+  'assume.terrainLola': 'Measured horizon mask: LOLA LDEM 80S, 80 m/pixel, lunar curvature included.',
+
+  'science.terrain.title': 'Terrain comes from the LDEM',
+  'science.terrain.body':
+    'Horizon masks are read from LDEM_80S_80M, the LOLA south-polar stereographic product (80 m/pixel, 16 bit). The Python pipeline projects each site, samples 30 km of terrain per azimuth and removes lunar curvature. The seven sites outside the footprint keep an analytic profile, labelled as such.',
+});

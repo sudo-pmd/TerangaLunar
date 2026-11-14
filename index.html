@@ -4,16 +4,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>TerangaLunar — le jour et la nuit au pôle Sud lunaire</title>
-    <meta name="description" content="TerangaLunar suit le cycle jour/nuit au pôle Sud de la Lune : carte 3D en temps réel, ensoleillement par site d’atterrissage, fenêtres de communication avec la Terre et espace scientifique.">
-    <meta name="color-scheme" content="dark light">
+    <meta name="description" content="TerangaLunar suit le cycle jour/nuit au pôle Sud de la Lune : globe 3D en temps réel, relief mesuré par LOLA, ensoleillement de chaque point d’atterrissage, fenêtres de communication avec la Terre.">
+    <meta name="color-scheme" content="dark">
     <meta name="theme-color" content="#070a12">
     <meta property="og:title" content="TerangaLunar">
     <meta property="og:description" content="Le cycle jour/nuit de la Lune, en direct, et les vraies fenêtres d’atterrissage au pôle Sud.">
     <meta property="og:image" content="assets/img/teranga-lunar.svg">
     <link rel="icon" type="image/svg+xml" href="assets/img/teranga-mark.svg">
+    <link rel="preload" as="image" href="assets/img/low/moon.jpg">
     <link rel="stylesheet" href="assets/css/tokens.css">
     <link rel="stylesheet" href="assets/css/app.css">
     <link rel="stylesheet" href="assets/css/theme.css">
+    <link rel="stylesheet" href="assets/css/theme3.css">
     <link rel="stylesheet" href="assets/css/print.css">
     <script type="importmap">
       {
@@ -26,12 +28,33 @@
   </head>
   <body>
     <canvas class="starfield" aria-hidden="true"></canvas>
+
+    <!-- The loader is in the markup, not built by JavaScript: it must be on
+         screen before the first module is even fetched. -->
+    <div id="loader" class="loader" role="status" aria-live="polite">
+      <div class="loader-inner">
+        <img class="loader-logo" src="assets/img/teranga-lunar.svg"
+          alt="TerangaLunar — Space &amp; Lunar Missions" width="300" height="72">
+        <div class="loader-ring" aria-hidden="true"><span></span></div>
+        <p class="loader-status" id="loader-status">Chargement</p>
+        <ul class="loader-steps">
+          <li data-step="config">Configuration</li>
+          <li data-step="terrain">Relief lunaire mesuré</li>
+          <li data-step="scene">Scène 3D et texture 4K</li>
+        </ul>
+        <div class="loader-bar" aria-hidden="true"><span id="loader-bar"></span></div>
+        <p class="loader-note">Données locales · aucun compte · aucun envoi</p>
+      </div>
+    </div>
+
     <div id="app">
       <p class="boot">Chargement des données…</p>
     </div>
+
     <noscript>
       <p class="boot">Cette application a besoin de JavaScript pour calculer les positions du Soleil et de la Terre.</p>
     </noscript>
+
     <script type="module" src="assets/js/app.js"></script>
   </body>
 </html>

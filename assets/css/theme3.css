@@ -1,0 +1,742 @@
+/* ============================================================
+   TerangaLunar — shell layer
+   Loaded after theme.css. Removes the top bar, moves the dock to
+   the right, styles the loading screen, the shadow ribbon, the
+   study-point panel and the south-pole globe.
+   ============================================================ */
+
+/* ------------------------------------------------------------ loader */
+
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 50% 40%, #0e1728 0%, #05070d 70%);
+  transition: opacity 0.55s ease, visibility 0.55s ease;
+}
+
+.loader.is-done {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loader-inner {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  padding: 24px;
+  text-align: center;
+}
+
+.loader-logo {
+  width: min(300px, 64vw);
+  height: auto;
+  opacity: 0.95;
+}
+
+.loader-ring {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.loader-ring span {
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  border-top-color: var(--gold);
+  border-right-color: rgba(201, 162, 39, 0.35);
+  animation: loader-spin 1.05s linear infinite;
+}
+
+@keyframes loader-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader-ring span { animation-duration: 3s; }
+}
+
+.loader-status {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #c9d3e4;
+}
+
+.loader-steps {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.75rem;
+  color: #64718a;
+}
+
+.loader-steps li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.3s ease;
+}
+
+.loader-steps li::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.3);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.loader-steps li[data-done='true'] {
+  color: #aab8cc;
+}
+
+.loader-steps li[data-done='true']::before {
+  background: var(--gold);
+  box-shadow: 0 0 8px rgba(246, 178, 60, 0.7);
+}
+
+.loader-bar {
+  width: min(240px, 62vw);
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(148, 163, 184, 0.16);
+  overflow: hidden;
+}
+
+.loader-bar span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--gold);
+  transition: width 0.45s ease;
+}
+
+.loader-note {
+  margin: 0;
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  color: #55627a;
+}
+
+/* --------------------------------------------------------------- dock */
+
+.dock {
+  left: auto;
+  right: 14px;
+  bottom: auto;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-direction: column;
+  gap: 1px;
+  padding: 7px 5px;
+}
+
+.dock-item {
+  width: 42px;
+  height: 42px;
+}
+
+.dock-item[aria-current='page']::before {
+  bottom: auto;
+  left: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.dock-sep {
+  width: 20px;
+  height: 1px;
+  margin: 5px 0;
+  background: rgba(148, 163, 184, 0.22);
+}
+
+.dock-lang {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  color: #b8c2d6;
+}
+
+.dock-lang:hover,
+.dock-lang:focus-visible {
+  color: var(--gold-bright);
+  background: rgba(148, 163, 184, 0.12);
+}
+
+/* The context window opens towards the page, not off the screen. */
+.dock-pop {
+  bottom: auto;
+  top: 50%;
+  left: auto;
+  right: calc(100% + 12px);
+  transform: translate(6px, -50%);
+}
+
+.dock-pop::after {
+  top: 50%;
+  left: 100%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-top-color: transparent;
+  border-left-color: #0e1626;
+}
+
+.dock-item:hover .dock-pop,
+.dock-item:focus-visible .dock-pop {
+  transform: translate(0, -50%);
+}
+
+/* Keep the reading column clear of the dock. */
+@media (min-width: 900px) {
+  main .container {
+    padding-right: 74px;
+  }
+}
+
+/* The dock floats on the right now, so no bottom gutter is needed. */
+main {
+  padding-bottom: 28px;
+}
+
+body[data-route='home'] main {
+  padding-bottom: 0;
+}
+
+/* ------------------------------------------------------------- landing */
+
+.stage {
+  height: 100svh;
+  min-height: 480px;
+}
+
+.stage-brand {
+  position: absolute;
+  left: clamp(16px, 3vw, 44px);
+  bottom: clamp(18px, 4vh, 42px);
+  display: grid;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.stage-logo {
+  width: min(210px, 44vw);
+  height: auto;
+  opacity: 0.92;
+}
+
+.stage-hint {
+  position: absolute;
+  left: clamp(16px, 3vw, 44px);
+  bottom: clamp(4px, 1.4vh, 12px);
+  margin: 0;
+  font-size: 0.625rem;
+  letter-spacing: 0.06em;
+  color: #5f6c83;
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------- transitions */
+
+@media (prefers-reduced-motion: no-preference) {
+  #main.page-in > * {
+    animation: page-in 0.5s cubic-bezier(0.22, 0.7, 0.3, 1) both;
+  }
+
+  #main.page-in > *:nth-child(2) { animation-delay: 0.04s; }
+  #main.page-in > *:nth-child(3) { animation-delay: 0.08s; }
+  #main.page-in > *:nth-child(4) { animation-delay: 0.12s; }
+}
+
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Centred heads and calmer hovers: less furniture, more page. */
+.page-head {
+  text-align: center;
+}
+
+.page-head h1,
+.page-head .lede,
+.page-head p {
+  margin-inline: auto;
+}
+
+.page-head .page-meta {
+  justify-content: center;
+}
+
+.section-head {
+  text-align: center;
+}
+
+.section-head p {
+  margin-inline: auto;
+}
+
+.site-card-link:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--line-strong);
+}
+
+/* ------------------------------------------------------------ map page */
+
+.map-hero {
+  position: relative;
+  height: min(88svh, 900px);
+  min-height: 560px;
+  overflow: hidden;
+}
+
+.map-globe {
+  height: 100%;
+  min-height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: radial-gradient(circle at 48% 46%, #0f1728 0%, #05070d 72%);
+}
+
+/* The probe bar already says how to place a point, and the ribbon explains the
+   cursor: the generic scene hint would land on top of both. */
+.map-globe .scene-hint {
+  display: none;
+}
+
+.map-shadow {
+  position: absolute;
+  inset: 0 0 auto 0;
+  display: grid;
+  gap: 9px;
+  padding: 14px clamp(14px, 3vw, 34px) 30px;
+  background: linear-gradient(180deg, rgba(4, 7, 13, 0.88) 0%, rgba(4, 7, 13, 0.55) 55%, rgba(4, 7, 13, 0) 100%);
+  pointer-events: none;
+}
+
+.map-shadow > * {
+  pointer-events: auto;
+}
+
+.shadow-top {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.shadow-kicker {
+  margin: 0;
+  font-size: 0.625rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.hud-time {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #eef3fb;
+  letter-spacing: 0.02em;
+}
+
+.shadow-offset {
+  margin: 0 0 0 auto;
+  font-size: 0.75rem;
+  color: var(--gold-bright);
+}
+
+.shadow-strip {
+  display: block;
+  width: 100%;
+  height: 34px;
+  border-radius: 4px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.shadow-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.shadow-facts {
+  display: flex;
+  gap: 18px;
+  margin: 0;
+  flex-wrap: wrap;
+}
+
+.shadow-facts div {
+  display: grid;
+  gap: 1px;
+}
+
+.shadow-facts dt {
+  font-size: 0.5625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #7d8aa0;
+}
+
+.shadow-facts dd {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #e8edf7;
+}
+
+.hud-scrub {
+  display: grid;
+  gap: 1px;
+}
+
+.hud-scrub input[type='range'] {
+  width: 100%;
+  height: 22px;
+  accent-color: var(--gold);
+  cursor: ew-resize;
+}
+
+.hud-scrub .hint {
+  margin: 0;
+  font-size: 0.625rem;
+  color: #8593a8;
+}
+
+/* A bar, not a card: the globe keeps its height, the controls stay put. */
+.map-probe {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 10px clamp(14px, 2vw, 26px);
+  padding: 22px clamp(70px, 8vw, 96px) 14px clamp(14px, 3vw, 34px);
+  background: linear-gradient(0deg, rgba(4, 7, 13, 0.94) 0%, rgba(4, 7, 13, 0.75) 60%, rgba(4, 7, 13, 0) 100%);
+  color: #dbe3f0;
+}
+
+.map-probe .probe-head {
+  flex: 1 1 190px;
+  min-width: 0;
+}
+
+.map-probe .probe-fields {
+  flex: 2 1 320px;
+}
+
+.map-probe .probe-out {
+  flex: 2 1 380px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+}
+
+.map-probe .probe-out > div {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  padding: 0;
+  border-top: 0;
+}
+
+.map-probe .probe-out dt {
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #7d8aa0;
+}
+
+.map-probe .probe-out dd {
+  text-align: left;
+  font-size: 0.8125rem;
+}
+
+.probe-head h2 {
+  margin: 0 0 4px;
+  font-family: inherit;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.probe-head p {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #9dabc0;
+}
+
+.probe-fields {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: end;
+}
+
+.probe-fields .field {
+  flex: 1 1 88px;
+  min-width: 0;
+}
+
+.probe-fields input {
+  width: 100%;
+}
+
+.probe-fields .btn {
+  flex: 0 0 auto;
+}
+
+.probe-out {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  font-size: 0.75rem;
+}
+
+.probe-out > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 0;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.probe-out dt {
+  margin: 0;
+  color: #8794a9;
+}
+
+.probe-out dd {
+  margin: 0;
+  color: #e8edf7;
+  text-align: right;
+}
+
+.probe-empty {
+  padding: 6px 0;
+  font-size: 0.75rem;
+  color: #8794a9;
+}
+
+.chip-dot {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #7c8aa1;
+}
+
+.probe-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #e8edf7;
+}
+
+.probe-state[data-lit='true'] .chip-dot {
+  background: var(--gold);
+  box-shadow: 0 0 10px rgba(246, 178, 60, 0.8);
+}
+
+/* `main .section` paints a white sheet; this page stays on the sky. */
+main .section.map-mid {
+  border-top: 0;
+  background: transparent;
+  color: var(--space-ink);
+}
+
+.map-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: clamp(20px, 4vw, 48px);
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .map-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.orbit-card header h2,
+.map-list header h2,
+.south-head h2 {
+  margin: 0 0 4px;
+  font-family: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+  color: #fff;
+}
+
+.orbit-card header p,
+.map-list header p,
+.south-head p {
+  margin: 0 0 14px;
+  max-width: 46ch;
+  font-size: 0.8125rem;
+  color: #93a0b8;
+}
+
+#orrery {
+  display: block;
+  width: 100%;
+  height: 260px;
+  border-radius: 8px;
+  background: radial-gradient(circle at 20% 50%, rgba(246, 178, 60, 0.06), transparent 60%);
+  cursor: grab;
+  touch-action: none;
+}
+
+#orrery:active {
+  cursor: grabbing;
+}
+
+.clps-chips {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.clps-chip {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 11px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 8px;
+  background: rgba(11, 16, 32, 0.55);
+  color: #d6deec;
+  font: inherit;
+  font-size: 0.8125rem;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.clps-chip:hover {
+  border-color: rgba(246, 178, 60, 0.45);
+  background: rgba(15, 22, 40, 0.75);
+}
+
+.clps-chip[data-lit='true'] .chip-dot {
+  background: var(--gold);
+  box-shadow: 0 0 9px rgba(246, 178, 60, 0.75);
+}
+
+.chip-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip-value {
+  font-size: 0.6875rem;
+  color: #8b98ad;
+}
+
+.clps-chip[data-lit='true'] .chip-value {
+  color: #e7c567;
+}
+
+.map-south {
+  margin-top: clamp(24px, 5vh, 56px);
+}
+
+.south-head {
+  padding-bottom: 14px;
+  text-align: center;
+}
+
+.south-head p {
+  margin-inline: auto;
+}
+
+.globe-host-south {
+  height: min(72svh, 760px);
+  border-left: 0;
+  border-right: 0;
+  border-radius: 0;
+  background: radial-gradient(circle at 50% 38%, #0e1626 0%, #04060c 74%);
+}
+
+/* --------------------------------------------------------------- mobile */
+
+@media (max-width: 720px) {
+  .dock {
+    right: 8px;
+    padding: 6px 4px;
+  }
+
+  .dock-item {
+    width: 38px;
+    height: 38px;
+  }
+
+  main .container {
+    padding-right: 52px;
+    padding-left: 16px;
+  }
+
+  .map-probe {
+    padding: 18px 58px 12px 14px;
+  }
+
+  .map-probe .probe-head,
+  .map-probe .probe-fields,
+  .map-probe .probe-out {
+    flex: 1 1 100%;
+  }
+
+  .map-probe .probe-head p {
+    display: none;
+  }
+
+  .map-hero {
+    height: 78svh;
+  }
+
+  .shadow-facts {
+    gap: 12px;
+  }
+
+  .stage-logo {
+    width: min(160px, 52vw);
+  }
+}
+
+@media (max-width: 520px) {
+  .map-probe {
+    padding: 11px;
+  }
+
+  .probe-out > div {
+    font-size: 0.6875rem;
+  }
+}

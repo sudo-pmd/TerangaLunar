@@ -3,6 +3,7 @@
  * view with no account and no personal data.
  *
  *   #/site/malapert_a?d=2026-03-01T12:00&n=14&p=eng&w=60&th=50,3,20&lg=en
+ *   #/map?lat=-84.5&lon=12.3
  */
 
 export const DEFAULT_STATE = {
@@ -15,6 +16,8 @@ export const DEFAULT_STATE = {
   language: null,
   compare: [],
   seuils: null,
+  /** Free study point on the map: {lat, lon} or null. */
+  probe: null,
 };
 
 const ROUTES = new Set([
@@ -67,6 +70,17 @@ export function parseHash(hash) {
   const ref = params.get('ref');
   if (ref) state.referenceId = ref;
 
+  // A free study point is only meaningful on the map, and only when both
+  // coordinates are present and inside the usual ranges.
+  if (route === 'map' && params.has('lat') && params.has('lon')) {
+    const lat = Number(params.get('lat'));
+    const lon = Number(params.get('lon'));
+    if (Number.isFinite(lat) && Number.isFinite(lon)
+      && Math.abs(lat) <= 90 && Math.abs(lon) <= 360) {
+      state.probe = { lat, lon: ((lon % 360) + 360) % 360 };
+    }
+  }
+
   return state;
 }
 
@@ -87,6 +101,10 @@ export function buildHash(state) {
   if (state.route === 'dates' || state.route === 'compare') {
     params.set('d', new Date(state.dateMs).toISOString().slice(0, 16));
     params.set('w', String(Math.round(state.weights.energy)));
+  }
+  if (state.route === 'map' && state.probe) {
+    params.set('lat', state.probe.lat.toFixed(4));
+    params.set('lon', state.probe.lon.toFixed(4));
   }
   if (state.seuils) {
     params.set(

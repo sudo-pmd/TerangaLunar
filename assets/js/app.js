@@ -1,20 +1,20 @@
 /**
  * Bootstrap, hash router and shared actions.
  *
- * Each route is an independent page with its own URL; the shell (sky, starfield,
- * header, footer) is shared. No account, no server call for the model itself.
+ * The shell is deliberately thin: a sky, a dock on the right that holds the five
+ * pages and the language switch, and the page itself. No header, so the Moon
+ * gets the whole screen.
  */
 
 import { loadConfig } from './data.js';
 import { initLang, setLang, getLang, t, fmtDate, onLangChange } from './i18n.js';
 import { readState, buildHash } from './state.js';
 import { mountStarfield } from './starfield.js';
+import { installTerrain } from './horizon.js';
 import {
   renderHome, renderSite, renderDates, renderCompare, renderDiscover, renderHelp,
 } from './views.js';
-import {
-  renderMap, renderLearn, renderSites, renderScience,
-} from './pages.js';
+import { renderMap, renderLearn, renderSites, renderScience } from './pages.js';
 
 const ROUTES = {
   home: renderHome,
@@ -29,7 +29,7 @@ const ROUTES = {
   help: renderHelp,
 };
 
-/** Which top-level navigation entry stays highlighted for a route. */
+/** Which dock entry stays highlighted for a route. */
 const NAV_PARENT = {
   site: 'sites',
   dates: 'science',
@@ -103,6 +103,14 @@ const actions = {
     app.state.siteId = id;
     navigate();
   },
+  /** Free study point on the map; silent so a click does not reload the scene. */
+  setProbe(probe, { silent = true } = {}) {
+    app.state.probe = probe;
+    const hash = buildHash(app.state);
+    if (window.location.hash === hash) return;
+    if (silent) window.history.replaceState(null, '', hash);
+    else window.location.hash = hash;
+  },
 };
 
 const NAV = [
@@ -127,29 +135,21 @@ function dockIcon(key) {
 
 function shell() {
   const lang = getLang();
+  const other = lang === 'fr' ? 'en' : 'fr';
   return `
     <a class="skip-link" href="#main">${t('nav.skip')}</a>
-    <header class="topbar">
-      <div class="container topbar-inner">
-        <a class="brand" href="#/" aria-label="TerangaLunar">
-          <img class="brand-logo" src="assets/img/teranga-mark.svg" alt="" width="34" height="34" decoding="async">
-          <span class="brand-name">Teranga<span class="brand-light">Lunar</span>
-            <span class="brand-tagline">${t('brand.tagline')}</span>
-          </span>
-        </a>
-        <div class="topbar-tools">
-          <button type="button" class="lang-toggle" id="lang-toggle" aria-label="${t('lang.switch')}">
-            ${lang === 'fr' ? 'EN' : 'FR'}
-          </button>
-        </div>
-      </div>
-    </header>
     <main id="main" tabindex="-1"></main>
     <nav class="dock" aria-label="${t('nav.menu')}">
       ${NAV.map(([key, href]) => `<a class="dock-item" href="${href}" data-nav="${key}" aria-label="${t(`nav.${key}`)}">
         ${dockIcon(key)}
         <span class="dock-pop" aria-hidden="true"><strong>${t(`nav.${key}`)}</strong><em>${t(`tip.${key}`)}</em></span>
       </a>`).join('')}
+      <span class="dock-sep" aria-hidden="true"></span>
+      <button type="button" class="dock-item dock-lang" id="lang-toggle"
+        aria-label="${t('lang.switch')} — ${other.toUpperCase()}"
+        title="${t('lang.switch')}">
+        <span aria-hidden="true">${other.toUpperCase()}</span>
+      </button>
     </nav>
     <footer class="site-footer">
       <div class="container footer-inner">
@@ -178,8 +178,8 @@ async function render() {
   const ctx = { config: app.config, state: app.state, actions };
   const token = ++renderToken;
 
-  // Routes may need to fetch precomputed SPICE series first; they draw
-  // synchronously from the cache afterwards.
+  // Routes may fetch precomputed SPICE series first; they draw synchronously
+  // from the cache afterwards.
   if (typeof fn.prepare === 'function') {
     try {
       await fn.prepare(ctx);
@@ -197,6 +197,12 @@ async function render() {
     if (link.dataset.nav === active) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
   });
+
+  // Replay the entrance animation on each page change.
+  main.classList.remove('page-in');
+  void main.offsetWidth;
+  main.classList.add('page-in');
+
   if (app.hasRendered) {
     main.focus({ preventScroll: true });
     window.scrollTo({ top: 0, behavior: 'auto' });
@@ -223,9 +229,70 @@ function onHashChange() {
   render();
 }
 
+/* ------------------------------------------------------------- loading screen */
+
+const loader = {
+  el: null,
+  start: 0,
+  done: new Set(),
+
+  init() {
+    this.el = document.getElementById('loader');
+    this.start = performance.now();
+    const label = this.el?.querySelector('#loader-status');
+    if (label) label.textContent = t('boot.loading');
+    for (const item of this.el?.querySelectorAll('[data-step]') || []) {
+      item.textContent = t(`boot.${item.dataset.step}`);
+    }
+    const note = this.el?.querySelector('.loader-note');
+    if (note) note.textContent = t('boot.note');
+  },
+
+  step(id) {
+    if (this.done.has(id)) return;
+    this.done.add(id);
+    const el = this.el?.querySelector(`[data-step="${id}"]`);
+    if (el) el.dataset.done = 'true';
+    const bar = this.el?.querySelector('#loader-bar');
+    const total = this.el?.querySelectorAll('[data-step]').length || 3;
+    if (bar) bar.style.width = `${Math.round((this.done.size / total) * 100)}%`;
+  },
+
+  async finish() {
+    if (!this.el) return;
+    // A visible flash of loader is worse than none: keep it up for a moment.
+    const elapsed = performance.now() - this.start;
+    await new Promise((resolve) => setTimeout(resolve, Math.max(0, 520 - elapsed)));
+    this.el.classList.add('is-done');
+    document.body.classList.add('is-ready');
+    const remove = () => this.el?.remove();
+    this.el.addEventListener('transitionend', remove, { once: true });
+    setTimeout(remove, 1200);
+  },
+};
+
+/** Decode an image without blocking; resolves either way. */
+function preloadImage(src) {
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.onload = () => resolve(true);
+    image.onerror = () => resolve(false);
+    image.src = src;
+  });
+}
+
 async function boot() {
   mountStarfield(document.body);
   app.root = document.getElementById('app');
+  loader.init();
+
+  // The two heavy assets are warmed while the configuration is parsed.
+  const sceneWarm = Promise.all([
+    preloadImage('assets/img/moon.jpg'),
+    preloadImage('assets/img/ldem_3_8bit.jpg'),
+    import('three').catch(() => null),
+  ]);
+
   try {
     app.config = await loadConfig();
   } catch (error) {
@@ -235,7 +302,19 @@ async function boot() {
       <p><a class="btn primary" href="">${t('ui.retry')}</a></p>
     </section>`;
     console.error(error);
+    await loader.finish();
     return;
+  }
+
+  loader.step('config');
+
+  // Real horizon masks: 720 azimuths per site, measured on LOLA LDEM 80S.
+  if (app.config.terrain) {
+    const count = installTerrain(app.config.terrain);
+    if (count) loader.step('terrain');
+    else loader.step('terrain');
+  } else {
+    loader.step('terrain');
   }
 
   app.state = readState();
@@ -243,6 +322,11 @@ async function boot() {
   app.state.language = getLang();
 
   renderAll();
+
+  await sceneWarm;
+  loader.step('scene');
+  await loader.finish();
+
   window.addEventListener('hashchange', onHashChange);
   onLangChange(() => {
     app.state.language = getLang();
