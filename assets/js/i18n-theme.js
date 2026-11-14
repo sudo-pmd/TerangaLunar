@@ -23,7 +23,7 @@ export const EXTRA = {
     'nav.help': 'Méthode et sources',
     'tip.home': 'La Lune, rien d’autre',
     'tip.map': 'Le terminateur en direct',
-    'tip.learn': 'Quatre étapes, aucun calcul',
+    'tip.learn': 'Cinq étapes, aucun calcul',
     'tip.sites': 'Onze points d’atterrissage',
     'tip.science': 'Métriques, données, API',
 
@@ -52,7 +52,7 @@ export const EXTRA = {
     'home.explore.map': 'Carte 3D temps réel',
     'home.explore.mapb': 'Le terminateur jour/nuit sur le globe, les vrais points d’atterrissage, une horloge accélérée.',
     'home.explore.learn': 'Visite guidée',
-    'home.explore.learnb': 'Quatre étapes interactives pour saisir la géométrie sans aucune formule.',
+    'home.explore.learnb': 'Cinq étapes interactives pour saisir la géométrie sans aucune formule.',
     'home.explore.science': 'Espace scientifique',
     'home.explore.scienceb': 'Tableau complet des métriques, hypothèses, jeux de données et API de calcul.',
     'home.recent.title': 'Derniers atterrissages',
@@ -89,8 +89,8 @@ export const EXTRA = {
     'map.clockNote': 'Heure simulée, accélérée. Aucune donnée n’est envoyée.',
 
     'learn.kicker': 'Visite guidée',
-    'learn.title': 'Quatre étapes',
-    'learn.lede': 'Quatre gestes, aucun calcul.',
+    'learn.title': 'Cinq étapes',
+    'learn.lede': 'Cinq gestes, aucune formule à retenir.',
     'learn.s1': 'Un Soleil qui rase',
     'learn.s2': 'Le relief décide',
     'learn.s3': 'La Terre en vue',
@@ -172,7 +172,7 @@ export const EXTRA = {
     'nav.method': 'Method',
     'tip.home': 'The Moon, nothing else',
     'tip.map': 'The terminator, live',
-    'tip.learn': 'Four steps, no maths',
+    'tip.learn': 'Five steps, no maths',
     'tip.sites': 'Eleven landing points',
     'tip.science': 'Metrics, data, API',
 
@@ -238,8 +238,8 @@ export const EXTRA = {
     'map.clockNote': 'Simulated, accelerated time. No data leaves the browser.',
 
     'learn.kicker': 'Guided tour',
-    'learn.title': 'Four steps',
-    'learn.lede': 'Four gestures, no maths.',
+    'learn.title': 'Five steps',
+    'learn.lede': 'Five gestures, no formula to memorise.',
     'learn.s1': 'A grazing Sun',
     'learn.s2': 'Terrain decides',
     'learn.s3': 'Earth in view',
@@ -448,4 +448,73 @@ Object.assign(EXTRA.en, {
   'map.panel.sites': 'Sites',
   'map.panel.orbit': 'Orbit',
   'map.panel.south': 'South pole',
+});
+
+/* Footer: brand, data, legal. No mention of a local or prototype project. */
+Object.assign(EXTRA.fr, {
+  'footer.dataTitle': 'Données',
+  'footer.legalTitle': 'Édition',
+  'footer.rights': 'Tous droits réservés.',
+  'footer.credit': 'Textures LRO/LOLA et photographies de la NASA (domaine public). Éphémérides calculées dans le navigateur.',
+  'footer.note2': '',
+});
+
+Object.assign(EXTRA.en, {
+  'footer.dataTitle': 'Data',
+  'footer.legalTitle': 'Edition',
+  'footer.rights': 'All rights reserved.',
+  'footer.credit': 'LRO/LOLA textures and NASA photography (public domain). Ephemerides computed in the browser.',
+  'footer.note2': '',
+});
+
+/* Guided tour: the CLPS opening step. */
+Object.assign(EXTRA.fr, {
+  'learn.s0': 'La Lune, en sous-traitance',
+  'learn.c1t': 'Ce que sont les missions CLPS',
+  'learn.c1b1': 'CLPS, pour Commercial Lunar Payload Services : la NASA n’envoie plus elle-même ses instruments sur la Lune, elle achète un transport. Elle confie des charges utiles scientifiques et techniques à des sociétés privées, qui construisent l’atterrisseur, choisissent la trajectoire et livrent la charge à la surface.',
+  'learn.c1b2': 'Chaque mission répond à une question précise : mesurer la chaleur du sol, cartographier la glace d’eau au fond d’un cratère, tester un récepteur de navigation, photographier l’horizon. Les sites retenus ici sont ceux de ces livraisons, du pôle Sud aux mers équatoriales.',
+  'learn.c1b3': 'Survolez une mission : le globe se place à ses coordonnées réelles. Le reste de la visite explique ce que ces lieux ont de particulier — un Soleil qui rase, un relief qui décide, une Terre toujours en vue.',
+  'learn.c1k1': 'Missions commandées',
+  'learn.c1h1': 'À des sociétés privées, depuis 2018',
+  'learn.c1k2': 'Sites cartographiés ici',
+  'learn.c1h2': 'Coordonnées publiées',
+});
+
+Object.assign(EXTRA.en, {
+  'learn.s0': 'The Moon, outsourced',
+  'learn.c1t': 'What CLPS missions are',
+  'learn.c1b1': 'CLPS stands for Commercial Lunar Payload Services: NASA no longer sends its own instruments to the Moon, it buys a ride. Scientific and technical payloads go to private companies that build the lander, choose the trajectory and deliver the payload to the surface.',
+  'learn.c1b2': 'Each mission answers one precise question: measure the heat of the soil, map water ice at the bottom of a crater, test a navigation receiver, photograph the horizon. The sites kept here are those delivery points, from the south pole to the equatorial maria.',
+  'learn.c1b3': 'Hover a mission: the globe turns to its real coordinates. The rest of the tour explains what makes those places special — a grazing Sun, relief that decides, an Earth always in view.',
+  'learn.c1k1': 'Missions ordered',
+  'learn.c1h1': 'From private companies, since 2018',
+  'learn.c1k2': 'Sites mapped here',
+  'learn.c1h2': 'Published coordinates',
+});
+
+/* Study sheet for a free point, and its two buttons on the map. */
+Object.assign(EXTRA.fr, {
+  'study.kicker': 'Fiche d’étude',
+  'study.mission': 'Point d’étude',
+  'study.analytic': 'horizon analytique',
+  'study.print': 'Imprimer la fiche',
+  'study.back': 'Retour à la carte',
+  'study.none': 'Aucun point sélectionné',
+  'study.noneHelp': 'Choisissez un point sur le globe, ou saisissez ses coordonnées, puis ouvrez sa fiche.',
+  'study.pick': 'Choisir un point',
+  'map.probe.study': 'Étudier ce point',
+  'map.probe.print': 'Imprimer sa fiche',
+});
+
+Object.assign(EXTRA.en, {
+  'study.kicker': 'Study sheet',
+  'study.mission': 'Study point',
+  'study.analytic': 'analytic horizon',
+  'study.print': 'Print the sheet',
+  'study.back': 'Back to the map',
+  'study.none': 'No point selected',
+  'study.noneHelp': 'Pick a point on the globe, or type its coordinates, then open its sheet.',
+  'study.pick': 'Pick a point',
+  'map.probe.study': 'Study this point',
+  'map.probe.print': 'Print its sheet',
 });

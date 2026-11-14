@@ -202,6 +202,7 @@ export function renderSite(root, ctx) {
           <div class="segmented" role="radiogroup" aria-label="${esc(t('site.profile'))}">
             <button type="button" role="radio" class="seg" data-profile="eng" aria-checked="${state.profile === 'eng'}">${esc(t('site.profile.eng'))}</button>
             <button type="button" role="radio" class="seg" data-profile="sci" aria-checked="${state.profile === 'sci'}">${esc(t('site.profile.sci'))}</button>
+            <button type="button" role="radio" class="seg" data-profile="all" aria-checked="${state.profile === 'all'}">${esc(t('site.profile.all'))}</button>
           </div>
         </div>
 
@@ -517,7 +518,12 @@ function thresholdTable(metrics, seuils) {
 
 function profilePanel({ geom, metrics, seuils, profile }) {
   const list = verdicts(metrics, seuils);
-  if (profile === 'sci') {
+  // "all" is the sheet: everything the two specialised profiles show, in one
+  // document, for a reader who wants the engineering numbers *and* the
+  // astronomy without switching tabs.
+  const sci = profile === 'sci' || profile === 'all';
+  const eng = profile === 'eng' || profile === 'all';
+  if (sci) {
     const grazing = metrics.grazingHours ?? 0;
     return `<header class="panel-head">
         <h2>${esc(t('profile.sci.title'))}</h2>
@@ -527,8 +533,13 @@ function profilePanel({ geom, metrics, seuils, profile }) {
         <div><dt>${esc(t('profile.sci.grazing'))}</dt><dd class="mono">${fmtNum(grazing, 0)} ${esc(t('ui.hours'))} <span class="muted">${esc(t('profile.sci.hours'))}</span></dd></div>
         <div><dt>${esc(t('profile.sci.shadow'))}</dt><dd class="mono">${fmtNum((geom.sun.az + 180) % 360, 0)}°</dd></div>
       </dl>
-      <p class="panel-note">${esc(t('metric.sun.help'))}</p>`;
+      <p class="panel-note">${esc(t('metric.sun.help'))}</p>
+      ${profile === 'all' ? `<div class="profile-split" aria-hidden="true"></div>${engineering({ metrics, seuils, list })}` : ''}`;
   }
+  return engineering({ metrics, seuils, list });
+}
+
+function engineering({ metrics, seuils, list }) {
   const failures = list.filter((v) => !v.ok).length;
   return `<header class="panel-head">
       <h2>${esc(t('profile.eng.title'))}</h2>
@@ -1034,6 +1045,122 @@ export function renderHelp(root, ctx) {
         </div>`).join('')}
       </dl>
     </section>`;
+
+  return null;
+}
+
+/* ------------------------------------------------------------------ study */
+
+/**
+ * Printable sheet for a free point on the globe.
+ *
+ * The point has no measured LOLA mask, so the horizon is the analytic model and
+ * the document says so instead of pretending to know the terrain.
+ */
+let printOnArrival = false;
+
+export function requestPrint(on = true) {
+  printOnArrival = on;
+}
+
+export function renderStudy(root, ctx) {
+  const { config, state } = ctx;
+  const probe = state.probe;
+
+  if (!probe) {
+    root.innerHTML = `<section class="container section empty-state">
+      <h1>${esc(t('study.none'))}</h1>
+      <p>${esc(t('study.noneHelp'))}</p>
+      <a class="btn primary" href="#/map">${esc(t('study.pick'))}</a>
+    </section>`;
+    return null;
+  }
+
+  const site = {
+    id: `probe_${probe.lat.toFixed(2)}_${probe.lon.toFixed(2)}`,
+    lat: probe.lat,
+    lon: probe.lon,
+    mission: t('study.mission'),
+    name: t('study.mission'),
+    type: 'probe',
+    status: 'reference',
+    precision: 'published',
+  };
+
+  const yearStart = yearStartOf(state.dateMs);
+  const series = buildSeries(site, yearStart, YEAR_SAMPLES, HOUR_MS);
+  const idx = Math.max(0, Math.min(series.count - 1, Math.round((state.dateMs - yearStart) / HOUR_MS)));
+  const samples = Math.max(24, Math.round((state.stayDays * DAY_MS) / HOUR_MS));
+  const i0 = idx;
+  const i1 = Math.min(series.count, i0 + samples);
+  const metrics = aggregate(series, i0, i1);
+  const profile = horizonProfile(site);
+  const geom = siteGeometry(site, series.startMs + idx * series.stepMs);
+
+  root.innerHTML = `
+    <article class="study-sheet">
+      <header class="container page-head study-head">
+        <p class="kicker">${esc(t('study.kicker'))}</p>
+        <h1>${esc(`${fmtNum(site.lat, 2)}° / ${fmtNum(site.lon, 2)}°`)}</h1>
+        <p class="page-meta">
+          <span class="mono">${esc(fmtDate(series.startMs + idx * series.stepMs))}</span>
+          <span>${fmtNum(state.stayDays, 0)} ${esc(t('ui.days'))}</span>
+          <span class="muted">${esc(t('study.analytic'))}</span>
+        </p>
+        <div class="book-actions">
+          <button type="button" class="btn primary" id="study-print">${esc(t('study.print'))}</button>
+          <a class="btn quiet" href="#/map">${esc(t('study.back'))}</a>
+        </div>
+      </header>
+
+      <section class="container section study-body">
+        <div class="science-grid">
+          <article class="stat tone-sun">
+            <h2 class="stat-label">${esc(t('metric.sun'))}</h2>
+            <p class="stat-value mono">${fmtPct(metrics.sunPct, 0)}</p>
+            <p class="stat-help">${esc(t('metric.sun.help'))}</p>
+          </article>
+          <article class="stat tone-night">
+            <h2 class="stat-label">${esc(t('science.col.night'))}</h2>
+            <p class="stat-value mono">${esc(fmtDuration(metrics.maxNightHours))}</p>
+            <p class="stat-help">${esc(t('metric.night.help'))}</p>
+          </article>
+          <article class="stat tone-earth">
+            <h2 class="stat-label">${esc(t('metric.earth'))}</h2>
+            <p class="stat-value mono">${fmtPct(metrics.earthPct, 0)}</p>
+            <p class="stat-help">${metrics.earthWindows.length} ${esc(t(metrics.earthWindows.length > 1 ? 'metric.windows' : 'metric.window'))}</p>
+          </article>
+        </div>
+
+        <div class="study-facts">
+          <div><dt>${esc(t('map.probe.sun'))}</dt><dd class="mono">${fmtNum(geom.sun.alt, 2)}° / ${fmtNum(geom.sun.az, 0)}°</dd></div>
+          <div><dt>${esc(t('map.probe.earth'))}</dt><dd class="mono">${fmtNum(geom.earth.alt, 2)}° / ${fmtNum(geom.earth.az, 0)}°</dd></div>
+          <div><dt>${esc(t('map.subsolar'))}</dt><dd class="mono">${fmtNum(geom.subSolar.lat, 2)}° / ${fmtNum(geom.subSolar.lon, 2)}°</dd></div>
+        </div>
+
+        <figure class="study-figure">
+          <figcaption>${esc(t('learn.s1t'))}</figcaption>
+          <div class="chart-host">${horizonSvg({ series, index: 12, profile })}</div>
+        </figure>
+
+        <figure class="study-figure">
+          <figcaption>${esc(t('learn.s3t'))}</figcaption>
+          <div class="chart-host chart-host-timeline">${timelineSvg({
+            series, i0, i1, stayI0: i0, stayI1: i1, index: Math.round((i0 + i1) / 2),
+          })}</div>
+        </figure>
+
+        ${assumptionsBox(config, site, series)}
+      </section>
+    </article>`;
+
+  const btn = root.querySelector('#study-print');
+  if (btn) btn.addEventListener('click', () => window.print());
+
+  if (printOnArrival) {
+    printOnArrival = false;
+    setTimeout(() => window.print(), 700);
+  }
 
   return null;
 }

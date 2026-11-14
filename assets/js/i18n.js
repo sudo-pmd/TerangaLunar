@@ -72,6 +72,7 @@ const fr = {
   'metric.score': 'Note globale',
   'metric.score.help': 'Moyenne pondérée énergie / communications (60/40 par défaut).',
   'metric.windows': 'fenêtres',
+  'metric.window': 'fenêtre',
   'metric.nightTruncated': 'nuit commencée avant la fenêtre',
 
   'site.title': 'Analyse du site',
@@ -84,6 +85,7 @@ const fr = {
   'site.profile': 'Profil',
   'site.profile.eng': 'Ingénierie',
   'site.profile.sci': 'Science',
+  'site.profile.all': 'Tout',
   'site.dateLabel': 'Date d’atterrissage (UTC)',
   'site.dateHelp': 'Toutes les heures sont en temps universel coordonné.',
   'site.copy': 'Copier le lien',
@@ -249,7 +251,7 @@ const fr = {
   'footer.computed': 'Calcul',
   'footer.sources': 'Sources et licences',
   'footer.limits': 'Limites',
-  'footer.note': 'Projet ouvert, sans compte ni serveur : tout se calcule dans le navigateur.',
+  'footer.note': 'Éphémérides et métriques calculées dans le navigateur, à partir des jeux de données publics de la NASA.',
 };
 
 const en = {
@@ -319,6 +321,7 @@ const en = {
   'metric.score': 'Overall score',
   'metric.score.help': 'Weighted mean of energy and communications (60/40 by default).',
   'metric.windows': 'windows',
+  'metric.window': 'window',
   'metric.nightTruncated': 'night began before the window',
 
   'site.title': 'Site analysis',
@@ -331,6 +334,7 @@ const en = {
   'site.profile': 'Profile',
   'site.profile.eng': 'Engineering',
   'site.profile.sci': 'Science',
+  'site.profile.all': 'Everything',
   'site.dateLabel': 'Landing date (UTC)',
   'site.dateHelp': 'All times are Coordinated Universal Time.',
   'site.copy': 'Copy link',
@@ -496,7 +500,7 @@ const en = {
   'footer.computed': 'Computed',
   'footer.sources': 'Sources and licenses',
   'footer.limits': 'Limits',
-  'footer.note': 'Open project, no account and no server: everything runs in the browser.',
+  'footer.note': 'Ephemerides and metrics computed in the browser from NASA public datasets.',
 };
 
 // Identity, live map, guided tour and science strings live in their own file.

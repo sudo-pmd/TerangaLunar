@@ -12,7 +12,8 @@ import { readState, buildHash } from './state.js';
 import { mountStarfield } from './starfield.js';
 import { installTerrain } from './horizon.js';
 import {
-  renderHome, renderSite, renderDates, renderCompare, renderDiscover, renderHelp,
+  renderHome, renderSite, renderStudy, renderDates, renderCompare, renderDiscover, renderHelp,
+  requestPrint,
 } from './views.js';
 import { renderMap, renderLearn, renderSites, renderScience } from './pages.js';
 
@@ -23,6 +24,7 @@ const ROUTES = {
   sites: renderSites,
   science: renderScience,
   site: renderSite,
+  study: renderStudy,
   dates: renderDates,
   compare: renderCompare,
   discover: renderDiscover,
@@ -32,6 +34,7 @@ const ROUTES = {
 /** Which dock entry stays highlighted for a route. */
 const NAV_PARENT = {
   site: 'sites',
+  study: 'map',
   dates: 'science',
   compare: 'science',
   discover: 'learn',
@@ -104,6 +107,12 @@ const actions = {
     navigate();
   },
   /** Free study point on the map; silent so a click does not reload the scene. */
+  /** Study sheet for the free point: the printable document behind the map. */
+  openStudy({ print = false } = {}) {
+    requestPrint(print);
+    app.state.route = 'study';
+    navigate();
+  },
   setProbe(probe, { silent = true } = {}) {
     app.state.probe = probe;
     const hash = buildHash(app.state);
@@ -153,14 +162,28 @@ function shell() {
     </nav>
     <footer class="site-footer">
       <div class="container footer-inner">
-        <p class="footer-brand">TerangaLunar <span class="muted">· ${t('brand.tagline')}</span></p>
-        <p class="footer-meta mono">
-          ${t('footer.data')} ${app.config.meta.version}
-          · ${t('footer.computed')} ${fmtDate(Date.now())}
-          · <a href="#/help">${t('footer.sources')}</a>
-          · <a href="#/science">${t('nav.science')}</a>
-        </p>
-        <p class="muted small">${t('footer.note2')}</p>
+        <div class="footer-col footer-brand-col">
+          <p class="footer-brand">TerangaLunar</p>
+          <p class="footer-tagline">${t('brand.tagline')}</p>
+          <nav class="footer-links" aria-label="${t('nav.menu')}">
+            <a href="#/map">${t('nav.map')}</a>
+            <a href="#/sites">${t('nav.sites')}</a>
+            <a href="#/learn">${t('nav.learn')}</a>
+            <a href="#/science">${t('nav.science')}</a>
+            <a href="#/help">${t('nav.method')}</a>
+          </nav>
+        </div>
+        <div class="footer-col">
+          <p class="footer-kicker">${t('footer.dataTitle')}</p>
+          <p class="footer-meta">${t('footer.data')} · v${app.config.meta.version}</p>
+          <p class="footer-meta">${t('footer.computed')} ${fmtDate(Date.now())}</p>
+          <p class="footer-meta"><a href="#/help">${t('footer.sources')}</a></p>
+        </div>
+        <div class="footer-col footer-legal">
+          <p class="footer-kicker">${t('footer.legalTitle')}</p>
+          <p class="footer-meta">© 2026 TerangaLunar. ${t('footer.rights')}</p>
+          <p class="footer-meta muted">${t('footer.credit')}</p>
+        </div>
       </div>
     </footer>`;
 }

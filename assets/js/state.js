@@ -22,7 +22,7 @@ export const DEFAULT_STATE = {
 
 const ROUTES = new Set([
   'home', 'map', 'learn', 'sites', 'science',
-  'site', 'dates', 'compare', 'discover', 'help',
+  'site', 'study', 'dates', 'compare', 'discover', 'help',
 ]);
 
 /** Parse a hash such as "#/site/id?d=...". */
@@ -47,7 +47,7 @@ export function parseHash(hash) {
   if (Number.isFinite(n) && n >= 1 && n <= 120) state.stayDays = n;
 
   const p = params.get('p');
-  if (p === 'eng' || p === 'sci') state.profile = p;
+  if (p === 'eng' || p === 'sci' || p === 'all') state.profile = p;
 
   const w = Number(params.get('w'));
   if (Number.isFinite(w) && w >= 0 && w <= 100) {
@@ -72,7 +72,7 @@ export function parseHash(hash) {
 
   // A free study point is only meaningful on the map, and only when both
   // coordinates are present and inside the usual ranges.
-  if (route === 'map' && params.has('lat') && params.has('lon')) {
+  if ((route === 'map' || route === 'study') && params.has('lat') && params.has('lon')) {
     const lat = Number(params.get('lat'));
     const lon = Number(params.get('lon'));
     if (Number.isFinite(lat) && Number.isFinite(lon)
@@ -102,7 +102,7 @@ export function buildHash(state) {
     params.set('d', new Date(state.dateMs).toISOString().slice(0, 16));
     params.set('w', String(Math.round(state.weights.energy)));
   }
-  if (state.route === 'map' && state.probe) {
+  if ((state.route === 'map' || state.route === 'study') && state.probe) {
     params.set('lat', state.probe.lat.toFixed(4));
     params.set('lon', state.probe.lon.toFixed(4));
   }
