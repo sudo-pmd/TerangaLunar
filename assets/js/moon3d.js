@@ -1,8 +1,10 @@
 /**
  * 3D Moon.
  *
- * Three.js comes from a CDN; without WebGL the module falls back to a flat,
- * clickable orthographic projection so the site still works.
+ * Three.js is vendored in `assets/vendor/three` (no CDN, no network). Without
+ * WebGL the module falls back to a flat, clickable orthographic projection so
+ * the site still works; a lost GPU context is survived with a still image and
+ * an automatic restart, so the globe can never end up as a blank disc.
  *
  * Body frame -> scene frame: (x, y, z)_body -> (x, z, y)_three, so the lunar
  * north pole is +Y and the south pole is -Y.
@@ -23,7 +25,13 @@ const STATUS_COLORS = {
 
 const MAP_IMAGE = 'assets/img/moon.jpg';          // 4096 x 2048
 const MAP_PREVIEW = 'assets/img/low/moon.jpg';    // 2048 x 1024, first paint
-const RELIEF_IMAGE = 'assets/img/ldem_3_8bit.jpg'; // LOLA global relief, 8 bit
+// LOLA relief, highest resolution first. The first entry is the slot for a
+// better export of the same product: drop the file in and it is used, else the
+// 8-bit global map stays.
+const RELIEF_IMAGES = [
+  'assets/img/ldem_hi.jpg', // optional-asset: higher-resolution LOLA export, used when present
+  'assets/img/ldem_3_8bit.jpg',
+];
 
 function mulberry32(seed) {
   let a = seed;
@@ -195,7 +203,13 @@ function easeInOutCubic(x) {
   return x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2;
 }
 
+// Once the browser refuses a WebGL context (GPU process gone, hardware
+// acceleration off), every later attempt fails the same way: remember it and
+// go straight to the 2D view instead of filling the console with errors.
+let webglBroken = false;
+
 export async function mountMoon(container, options = {}) {
+  if (webglBroken) return mountFallback(container, options);
   try {
     const THREE = await import('three');
     const { OrbitControls } = await import('three/addons/controls/OrbitControls.js');
@@ -210,14 +224,63 @@ function createScene(THREE, OrbitControls, container, opts) {
   const {
     sites = [], onSelect, dateMs = Date.now(), reducedMotion = false,
     live = false, fit = false, view = 'globe', probe = null, onPick = null,
-    autoRotate = true,
+    autoRotate = true, mini = false, lat, lon,
   } = opts;
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  // Full-resolution MSAA on a 1200 px canvas is what gets the GPU process
+  // killed on integrated chips ("Error creating WebGL context" for every
+  // later scene). Large canvases run at 1.5x without multisampling; small ones
+  // keep the sharp version.
+  const dpr = window.devicePixelRatio || 1;
+  const big = (container.clientWidth || 0) > 700;
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({
+      antialias: dpr <= 1.25 ? true : !big,
+      alpha: true,
+      powerPreference: 'high-performance',
+    });
+  } catch (error) {
+    webglBroken = true;
+    container.dataset.gl = 'none';
+    throw error;
+  }
+  renderer.setPixelRatio(Math.min(big ? 1.5 : 2, dpr));
   renderer.setSize(container.clientWidth || 1, container.clientHeight || 1);
   renderer.domElement.setAttribute('aria-hidden', 'true');
   container.appendChild(renderer.domElement);
+
+  // A lost context (GPU reset, tab parked for a long time, too many live
+  // contexts) used to leave an empty disc on screen. Instead: keep a still of
+  // the same Moon behind the canvas, and restart the loop when the browser
+  // hands the context back.
+  const still = document.createElement('img');
+  still.className = 'globe-still';
+  still.alt = '';
+  still.decoding = 'async';
+  still.hidden = true;
+  still.src = MAP_PREVIEW;
+  container.appendChild(still);
+
+  const onContextLost = (event) => {
+    event.preventDefault();
+    container.dataset.gl = 'lost';
+    still.hidden = false;
+    cancelAnimationFrame(raf);
+  };
+  const onContextRestored = () => {
+    container.dataset.gl = 'live';
+    still.hidden = true;
+    albedo.needsUpdate = true;
+    if (ready.hi) ready.hi.needsUpdate = true;
+    if (ready.relief) ready.relief.needsUpdate = true;
+    renderer.setSize(container.clientWidth || 1, container.clientHeight || 1);
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(tick);
+  };
+  renderer.domElement.addEventListener('webglcontextlost', onContextLost, false);
+  renderer.domElement.addEventListener('webglcontextrestored', onContextRestored, false);
+  container.dataset.gl = 'live';
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(
@@ -321,7 +384,7 @@ function createScene(THREE, OrbitControls, container, opts) {
       }`,
   });
 
-  const moon = new THREE.Mesh(new THREE.SphereGeometry(1, 192, 128), material);
+  const moon = new THREE.Mesh(new THREE.SphereGeometry(1, 160, 96), material);
   group.add(moon);
   container.dataset.moonTexture = 'procedural';
 
@@ -341,7 +404,9 @@ function createScene(THREE, OrbitControls, container, opts) {
   setTimeout(() => resolveReady(), 9000);
 
   const applyMap = (texture, hiRes) => {
-    if (!texture) return;
+    // A texture that failed to decode has no image: binding it would sample a
+    // white 1x1 placeholder and the Moon would turn into a white ball.
+    if (!texture?.image?.width) return;
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
     texture.minFilter = THREE.LinearMipmapLinearFilter;
@@ -352,25 +417,42 @@ function createScene(THREE, OrbitControls, container, opts) {
   };
 
   loader.load(MAP_PREVIEW, (texture) => applyMap(texture, false), undefined, () => {});
-  loader.load(MAP_IMAGE, (texture) => {
-    applyMap(texture, true);
-    ready.hi = texture;
-    settle();
-  }, undefined, () => {
-    // A missing 4K file is not fatal: the 2K preview is already on screen.
-    settle();
-    if (!previewDone) container.dataset.moonTexture = 'procedural';
-  });
 
-  loader.load(RELIEF_IMAGE, (texture) => {
-    texture.colorSpace = THREE.NoColorSpace;
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.minFilter = THREE.LinearMipmapLinearFilter;
-    uniforms.heightMap.value = texture;
-    uniforms.hasRelief.value = 1;
-    ready.relief = texture;
+  // Only the wide views need the 4K photo: on a 300 px circle it is 32 MB of
+  // video memory for pixels nobody can see.
+  if (!mini && view !== 'south') {
+    loader.load(MAP_IMAGE, (texture) => {
+      applyMap(texture, true);
+      ready.hi = texture;
+      settle();
+    }, undefined, () => {
+      // A missing 4K file is not fatal: the 2K preview is already on screen.
+      settle();
+      if (!previewDone) container.dataset.moonTexture = 'procedural';
+    });
+  } else {
     settle();
-  }, undefined, () => settle());
+  }
+
+  const loadRelief = (index) => {
+    if (index >= RELIEF_IMAGES.length) {
+      settle();
+      return;
+    }
+    loader.load(RELIEF_IMAGES[index], (texture) => {
+      texture.colorSpace = THREE.NoColorSpace;
+      texture.wrapS = THREE.RepeatWrapping;
+      // The shader samples this map at fixed texel offsets: mipmaps would only
+      // cost a third more video memory on a high-resolution export.
+      texture.generateMipmaps = false;
+      texture.minFilter = THREE.LinearFilter;
+      uniforms.heightMap.value = texture;
+      uniforms.hasRelief.value = 1;
+      ready.relief = texture;
+      settle();
+    }, undefined, () => loadRelief(index + 1));
+  };
+  loadRelief(0);
 
   // --- markers ----------------------------------------------------------
 
@@ -458,7 +540,9 @@ function createScene(THREE, OrbitControls, container, opts) {
 
   /** Camera straight under the south pole: the "seen from below" view. */
   const framePole = () => {
-    const distance = Math.min(2.9, fitDistance() * 0.86);
+    // Whole disc, margin included: cropped at the bottom the pole view looked
+    // like a bug rather than a framing choice.
+    const distance = fitDistance();
     camera.position.set(0.02, -distance, 0.03);
     controls.target.set(0, 0, 0);
     camera.up.set(0, 0, 1);
@@ -476,7 +560,38 @@ function createScene(THREE, OrbitControls, container, opts) {
   let userMoved = false;
   controls.addEventListener('start', () => { userMoved = true; });
 
-  if (view === 'south') {
+  // Which point the camera should face. A resize must not undo a choice made
+  // with the view buttons, so the current target is remembered.
+  let currentView = {
+    lat: Number.isFinite(lat) ? lat : (view === 'south' ? -90 : 12),
+    lon: Number.isFinite(lon) ? lon : 0,
+  };
+
+  /** Point the camera at a selenographic coordinate (mini globes). */
+  const setView = (latDeg, lonDeg) => {
+    currentView = { lat: latDeg, lon: lonDeg };
+    const unit = surfaceVector(latDeg, lonDeg, 1);
+    const dir = new THREE.Vector3(unit.x, unit.y, unit.z);
+    // Straight above a pole, lookAt(0,0,0) has no preferred roll: nudge it.
+    if (Math.abs(dir.y) > 0.995) dir.x += dir.y > 0 ? 0.02 : -0.02;
+    dir.normalize();
+    camera.up.set(0, 1, 0);
+    const distance = mini ? Math.min(3.2, fitDistance() * 0.9) : fitDistance();
+    camera.position.copy(dir).multiplyScalar(distance);
+    controls.target.set(0, 0, 0);
+    camera.lookAt(controls.target);
+    camera.updateProjectionMatrix();
+    controls.update();
+    container.dataset.cam = `${camera.position.toArray().map((v) => v.toFixed(2)).join(',')}|view`;
+  };
+
+  if (mini) {
+    controls.enabled = false;
+    controls.enableZoom = false;
+    controls.autoRotate = false;
+    setView(currentView.lat, currentView.lon);
+    controls.enabled = false;
+  } else if (view === 'south') {
     framePole();
     controls.autoRotate = false;
     controls.rotateSpeed = 0.32;
@@ -484,7 +599,10 @@ function createScene(THREE, OrbitControls, container, opts) {
     controls.maxPolarAngle = Math.PI - 0.02;
   } else if (fit) {
     frameGlobe();
-    controls.autoRotate = false;
+    // A very slow drift keeps the landing page alive without moving the
+    // framing: the camera orbits, the distance does not change.
+    controls.autoRotate = !reducedMotion;
+    controls.autoRotateSpeed = 0.16;
   }
 
   // --- lighting (shader driven) -----------------------------------------
@@ -548,10 +666,15 @@ function createScene(THREE, OrbitControls, container, opts) {
     onPick(toLatLon(globeHit));
   };
 
-  renderer.domElement.addEventListener('pointermove', onPointerMove);
-  renderer.domElement.addEventListener('pointerleave', onPointerLeave);
-  renderer.domElement.addEventListener('pointerdown', onPointerDown);
-  renderer.domElement.addEventListener('click', onClick);
+  if (!mini) {
+    renderer.domElement.addEventListener('pointermove', onPointerMove);
+    renderer.domElement.addEventListener('pointerleave', onPointerLeave);
+    renderer.domElement.addEventListener('pointerdown', onPointerDown);
+    renderer.domElement.addEventListener('click', onClick);
+  } else {
+    renderer.domElement.style.pointerEvents = 'none';
+    hintEl.hidden = true;
+  }
 
   // --- resize ------------------------------------------------------------
 
@@ -560,6 +683,7 @@ function createScene(THREE, OrbitControls, container, opts) {
     renderer.setSize(container.clientWidth, container.clientHeight);
     camera.aspect = container.clientWidth / container.clientHeight;
     camera.updateProjectionMatrix();
+    if (mini && !userMoved) setView(currentView.lat, currentView.lon);
     if (fit && !userMoved) frameGlobe();
     if (view === 'south' && !userMoved) framePole();
   };
@@ -575,6 +699,12 @@ function createScene(THREE, OrbitControls, container, opts) {
     if (disposed) return;
     raf = requestAnimationFrame(tick);
     controls.update();
+
+    if (mini) {
+      // Still objects: render once per frame, no rays, no tooltip.
+      renderer.render(scene, camera);
+      return;
+    }
 
     raycaster.setFromCamera(pointer, camera);
     const hits = raycaster.intersectObjects(markers, false);
@@ -616,16 +746,22 @@ function createScene(THREE, OrbitControls, container, opts) {
     /** Move the clock: the terminator follows. */
     setTime(ms) { applyTime(ms); },
     setProbe,
+    setView,
     framePole,
     frameGlobe,
     dispose() {
       disposed = true;
       cancelAnimationFrame(raf);
       observer.disconnect();
-      renderer.domElement.removeEventListener('pointermove', onPointerMove);
-      renderer.domElement.removeEventListener('pointerleave', onPointerLeave);
-      renderer.domElement.removeEventListener('pointerdown', onPointerDown);
-      renderer.domElement.removeEventListener('click', onClick);
+      if (!mini) {
+        renderer.domElement.removeEventListener('pointermove', onPointerMove);
+        renderer.domElement.removeEventListener('pointerleave', onPointerLeave);
+        renderer.domElement.removeEventListener('pointerdown', onPointerDown);
+        renderer.domElement.removeEventListener('click', onClick);
+      }
+      renderer.domElement.removeEventListener('webglcontextlost', onContextLost);
+      renderer.domElement.removeEventListener('webglcontextrestored', onContextRestored);
+      still.remove();
       controls.dispose();
       albedo.dispose();
       for (const texture of [ready.hi, ready.relief]) texture?.dispose();
@@ -633,6 +769,9 @@ function createScene(THREE, OrbitControls, container, opts) {
       moon.geometry.dispose();
       for (const marker of markers) marker.material.dispose();
       probeSprite.material.dispose();
+      // Release the GPU context straight away: browsers keep only a handful
+      // alive, and the router creates a new scene on every page.
+      renderer.forceContextLoss?.();
       renderer.dispose();
       renderer.domElement.remove();
       tip.remove();

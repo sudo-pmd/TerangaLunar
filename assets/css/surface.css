@@ -1,0 +1,763 @@
+/* ============================================================
+   TerangaLunar — surfaces
+   Last layer. Turns every reading surface dark (no white paper),
+   rounds the corners, adds soft shadows, styles the minimal
+   loader and the circular globe figures.
+   ============================================================ */
+
+/* The light tokens of tokens.css are re-pointed here, once, instead of
+   repainting each component: every rule that reads --surface / --ink /
+   --line inherits the night palette. */
+body {
+  --bg: #0a101c;
+  --surface: rgba(15, 22, 36, 0.88);
+  --surface-2: rgba(24, 33, 52, 0.82);
+  --surface-3: rgba(32, 43, 66, 0.9);
+  --ink: #e8eef9;
+  --ink-2: #c3cddc;
+  --muted: #8c99ae;
+  --line: rgba(148, 163, 184, 0.16);
+  --line-strong: rgba(148, 163, 184, 0.32);
+  --shadow: 0 18px 42px -26px rgba(0, 0, 0, 0.9);
+
+  --sun-soft: rgba(245, 158, 11, 0.14);
+  --sun-ink: #f3c469;
+  --earth-soft: rgba(37, 99, 235, 0.18);
+  --ok: #4ade80;
+  --ok-soft: rgba(34, 197, 94, 0.14);
+  --ko: #fca5a5;
+  --ko-soft: rgba(248, 113, 113, 0.14);
+}
+
+/* ------------------------------------------------------------ loader */
+
+.loader-inner {
+  gap: 18px;
+}
+
+.loader-line {
+  margin: 0;
+  min-height: 1.2em;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #9aa7bc;
+  transition: opacity 0.25s ease;
+}
+
+.loader-ring {
+  width: 38px;
+  height: 38px;
+}
+
+/* ------------------------------------------------- reading surfaces */
+
+main .section {
+  margin-block: 16px;
+  padding-block: var(--s-5);
+  padding-inline: clamp(16px, 3vw, 34px);
+  background: rgba(13, 19, 32, 0.82);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: 0 26px 70px -46px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  color: var(--ink);
+  backdrop-filter: blur(10px) saturate(115%);
+}
+
+main .section:first-of-type {
+  border-radius: 20px;
+}
+
+main .section + .section {
+  border-top: 1px solid var(--line);
+}
+
+main .panel,
+main .container.panel {
+  padding: clamp(16px, 2.4vw, 26px);
+  margin-block: 14px;
+  background: rgba(15, 22, 36, 0.78);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 22px 60px -48px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* The historic rule flattens panels to a hairline; keep them as cards. */
+main .panel:not(.panel-dark),
+main .container.panel:not(.panel-dark) {
+  background: rgba(15, 22, 36, 0.78);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding-inline: clamp(16px, 2.4vw, 26px);
+  padding-block: clamp(16px, 2.4vw, 26px);
+  margin-block: 14px;
+}
+
+.panel-dark {
+  border-radius: 18px;
+  box-shadow: 0 22px 60px -48px rgba(0, 0, 0, 0.95);
+}
+
+/* --------------------------------------------------------- components */
+
+.stat {
+  background: rgba(18, 26, 42, 0.9);
+  border: 1px solid var(--line);
+  border-top-width: 2px;
+  border-radius: 16px;
+  box-shadow: 0 18px 44px -38px rgba(0, 0, 0, 0.9);
+  padding: 16px 18px;
+}
+
+.stat.tone-sun { border-top-color: rgba(245, 158, 11, 0.7); }
+.stat.tone-night { border-top-color: rgba(148, 163, 184, 0.5); }
+.stat.tone-earth { border-top-color: rgba(59, 130, 246, 0.65); }
+
+.site-card-link {
+  background: rgba(17, 25, 40, 0.88);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 16px 40px -36px rgba(0, 0, 0, 0.9);
+}
+
+.inset-card {
+  border-radius: 16px;
+  box-shadow: 0 16px 40px -38px rgba(0, 0, 0, 0.9);
+}
+
+.step-body {
+  border-radius: 18px;
+  background: rgba(15, 22, 36, 0.86);
+  border: 1px solid var(--line);
+  box-shadow: 0 24px 60px -48px rgba(0, 0, 0, 0.95);
+}
+
+.step-nav button {
+  border-radius: 0 12px 12px 0;
+}
+
+.step-nav button[aria-current='step'] {
+  border-radius: 0 12px 12px 0;
+  background: rgba(22, 32, 50, 0.95);
+  border-left-color: var(--gold);
+  box-shadow: 0 14px 34px -30px rgba(0, 0, 0, 0.9);
+}
+
+.step-nav button:hover {
+  background: rgba(24, 33, 52, 0.7);
+}
+
+.callout,
+.assumptions,
+.empty-state,
+.reading {
+  border-radius: 18px;
+}
+
+.assumptions {
+  background: rgba(15, 22, 36, 0.75);
+  border: 1px solid var(--line);
+  padding: clamp(16px, 2.4vw, 26px);
+  margin-block: 16px;
+  box-shadow: 0 22px 60px -50px rgba(0, 0, 0, 0.95);
+}
+
+.chart-host {
+  background: rgba(8, 13, 23, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 14px;
+  padding: 8px 6px;
+  overflow: hidden;
+}
+
+.chart-host svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.table-scroll {
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(10, 16, 28, 0.55);
+  overflow: auto;
+}
+
+.data-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.data-table tbody tr:nth-child(even) {
+  background: rgba(148, 163, 184, 0.045);
+}
+
+.data-table thead th {
+  background: rgba(9, 14, 25, 0.9);
+}
+
+/* Inputs inherit the night palette; no white wells left. */
+input,
+select,
+textarea {
+  background: rgba(9, 14, 25, 0.92);
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  color: var(--ink);
+}
+
+input::placeholder {
+  color: rgba(140, 153, 174, 0.7);
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid rgba(246, 178, 60, 0.6);
+  outline-offset: 1px;
+}
+
+select option {
+  background: #0b111d;
+  color: var(--ink);
+}
+
+.btn,
+.chip,
+.seg {
+  border-radius: 10px;
+}
+
+.chip {
+  border-radius: 999px;
+}
+
+.badge {
+  border-radius: 999px;
+}
+
+.badge-planned {
+  background: rgba(37, 99, 235, 0.22);
+  border-color: rgba(96, 165, 250, 0.38);
+  color: #bfdbfe;
+}
+
+.badge-lost {
+  background: rgba(148, 163, 184, 0.14);
+  border-color: rgba(148, 163, 184, 0.3);
+  color: #c3ccdc;
+}
+
+.badge-landed {
+  background: rgba(245, 158, 11, 0.16);
+  border-color: rgba(246, 178, 60, 0.4);
+  color: #f7cf8b;
+}
+
+.badge-reference {
+  color: var(--muted);
+}
+
+.gloss-body {
+  background: #101828;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  box-shadow: 0 20px 50px -30px rgba(0, 0, 0, 0.9);
+}
+
+.thr-input input {
+  border-radius: 8px;
+}
+
+.verdict {
+  border-radius: 999px;
+}
+
+/* The dock floats over dark pages now; a touch more contrast. */
+.dock {
+  background: rgba(9, 13, 22, 0.72);
+  box-shadow: 0 20px 50px -34px rgba(0, 0, 0, 0.9);
+}
+
+/* ------------------------------------------------------ globe figures */
+
+.globe-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+  gap: clamp(18px, 3vw, 42px);
+  align-items: center;
+  padding-block: var(--s-4);
+}
+
+@media (max-width: 780px) {
+  .globe-figure {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    text-align: center;
+  }
+}
+
+.globe-circle {
+  position: relative;
+  width: min(300px, 76vw);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  background: radial-gradient(circle at 42% 38%, #131c2d 0%, #04070d 72%);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow:
+    0 0 0 6px rgba(148, 163, 184, 0.04),
+    0 30px 70px -40px rgba(0, 0, 0, 0.95),
+    inset 0 0 60px rgba(0, 0, 0, 0.6);
+}
+
+.globe-circle canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 50%;
+}
+
+.globe-caption h2 {
+  margin: 0 0 6px;
+  font-family: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.3rem, 1rem + 1.1vw, 1.9rem);
+  color: #fff;
+}
+
+.globe-caption p {
+  margin: 0 0 14px;
+  max-width: 46ch;
+  font-size: 0.875rem;
+  color: #93a0b8;
+}
+
+.globe-readout {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--gold-bright);
+  letter-spacing: 0.03em;
+}
+
+.globe-views {
+  display: inline-flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(9, 14, 25, 0.6);
+}
+
+.globe-views .seg {
+  border: 0;
+  background: transparent;
+  color: var(--ink-2);
+  padding: 6px 12px;
+  border-radius: 9px;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.globe-views .seg.is-active,
+.globe-views .seg[aria-pressed='true'] {
+  background: rgba(246, 178, 60, 0.16);
+  color: #f7d79a;
+}
+
+/* ------------------------------------------------------------- mobile */
+
+@media (max-width: 720px) {
+  main .section {
+    margin-block: 10px;
+    border-radius: 16px;
+    padding-inline: 14px;
+  }
+
+  main .panel,
+  main .container.panel {
+    border-radius: 14px;
+    margin-block: 10px;
+  }
+
+  .stat,
+  .site-card-link,
+  .step-body,
+  .assumptions {
+    border-radius: 14px;
+  }
+}
+
+@media print {
+  main .section,
+  main .panel,
+  .stat {
+    background: #fff !important;
+    color: #111 !important;
+    box-shadow: none !important;
+  }
+}
+
+/* The dock is fixed on the right: every container keeps that gutter, whatever
+   the section/panel padding rules above said. Declared last on purpose. */
+@media (min-width: 900px) {
+  main .container {
+    padding-right: 78px;
+  }
+}
+
+@media (max-width: 899px) {
+  main .container {
+    padding-right: 68px;
+  }
+}
+
+/* Primary action: the site's amber, not "ink on ink". */
+.btn.primary {
+  background: var(--gold-bright, #f6c65b);
+  border-color: var(--gold-bright, #f6c65b);
+  color: #141002;
+}
+
+.btn.primary:hover {
+  background: #ffd479;
+  border-color: #ffd479;
+}
+
+.btn.quiet {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ink);
+}
+
+.btn:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* ---------------------------------------------------------- map page */
+
+.map-hero-bar {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 20px clamp(14px, 3vw, 34px) 24px;
+  background: linear-gradient(0deg, rgba(4, 7, 13, 0.9) 0%, rgba(4, 7, 13, 0) 100%);
+  pointer-events: none;
+}
+
+.map-hero-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #8b98ad;
+}
+
+/* A still frame of the same Moon, shown only if the GPU takes the context
+   away. It keeps the disc from ever reading as a blank white circle. */
+.globe-still {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+.globe-host canvas {
+  position: relative;
+  z-index: 1;
+}
+
+.map-body {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: clamp(16px, 2.6vw, 34px);
+  align-items: start;
+  padding-block: clamp(22px, 4vh, 44px);
+}
+
+.map-rail {
+  position: sticky;
+  top: 18px;
+  display: grid;
+  gap: 4px;
+}
+
+.map-rail button {
+  text-align: left;
+  padding: 11px 14px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: #9aa7bc;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.map-rail button:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #dfe7f4;
+}
+
+.map-rail button[aria-pressed='true'] {
+  background: rgba(22, 32, 50, 0.92);
+  border-color: var(--line);
+  color: #fff;
+  box-shadow: inset 3px 0 0 0 var(--gold);
+}
+
+.map-panels {
+  min-width: 0;
+}
+
+.map-panel {
+  display: grid;
+  gap: 18px;
+  padding: clamp(20px, 3vw, 34px);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(13, 19, 32, 0.82);
+  box-shadow: 0 26px 70px -50px #000;
+}
+
+.map-panel[hidden] {
+  display: none;
+}
+
+.panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.panel-head h2 {
+  margin: 0;
+  font-family: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.2rem, 1rem + 0.8vw, 1.6rem);
+  color: #fff;
+}
+
+.panel-head p {
+  margin: 0;
+  max-width: 52ch;
+  font-size: 0.8125rem;
+  color: #8b98ad;
+}
+
+.panel-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.shadow-strip {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.probe-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.probe-out {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.probe-out > div {
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.probe-out dt {
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8b98ad;
+}
+
+.probe-out dd {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: #eef3fb;
+}
+
+.probe-state {
+  grid-column: span 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+  color: #c3cddc;
+}
+
+.probe-empty {
+  color: #8b98ad;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 860px) {
+  .map-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .map-rail {
+    position: static;
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    overflow-x: auto;
+    gap: 6px;
+    padding-bottom: 4px;
+  }
+
+  .map-rail button {
+    white-space: nowrap;
+    padding: 9px 14px;
+    font-size: 0.8125rem;
+    border-color: var(--line);
+  }
+
+  .map-panel {
+    border-radius: 16px;
+    padding: 18px 16px;
+  }
+
+  .probe-state {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .map-hero {
+    height: min(64svh, 560px);
+    min-height: 380px;
+  }
+}
+
+/* Shown only if the modules never start. */
+.loader-fallback {
+  max-width: 36ch;
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: #c3cddc;
+  text-align: center;
+}
+
+/* Clear the fixed dock: the hero bar is not a .container, so it needs its own
+   gutter. The rail scrolls horizontally on small screens, without a bar. */
+@media (max-width: 899px) {
+  .map-hero-bar {
+    padding-right: 72px;
+  }
+}
+
+.map-rail {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.map-rail::-webkit-scrollbar {
+  display: none;
+}
+
+/* A lost WebGL context is painted as an opaque white rectangle by the
+   compositor; it sat above the still image and hid it. While the context is
+   gone, the canvas steps aside so the photo underneath is what you see. */
+.globe-host[data-gl='lost'] canvas,
+[data-gl='lost'] canvas {
+  visibility: hidden;
+}
+
+/* The map index is a numbered editorial list: a hairline, small capitals, an
+   amber tick for the open section. No pills, no cards, no glow. */
+.map-rail {
+  gap: 0;
+  padding-left: 0;
+  border-left: 1px solid var(--line);
+}
+
+.map-rail button {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 13px 10px 13px 16px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: #7d8aa0;
+  font-size: 0.9375rem;
+  letter-spacing: 0.01em;
+}
+
+.map-rail button .rail-n {
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  color: #4f5b6e;
+}
+
+.map-rail button:hover {
+  background: none;
+  color: #dfe7f4;
+}
+
+.map-rail button[aria-pressed='true'] {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  color: #fff;
+}
+
+.map-rail button[aria-pressed='true'] .rail-n {
+  color: var(--gold);
+}
+
+.map-rail button[aria-pressed='true']::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 11px;
+  bottom: 11px;
+  width: 2px;
+  background: var(--gold);
+}
+
+@media (max-width: 860px) {
+  .map-rail {
+    border-left: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .map-rail button {
+    padding: 10px 16px 12px 0;
+  }
+
+  .map-rail button[aria-pressed='true']::before {
+    left: 0;
+    right: 8px;
+    top: auto;
+    bottom: -1px;
+    width: auto;
+    height: 2px;
+  }
+}

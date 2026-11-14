@@ -15,7 +15,7 @@
  * masks loaded at boot — nothing is decorative.
  */
 
-import { t, siteName, fmtNum, fmtDate } from './i18n.js';
+import { t, siteName, fmtNum } from './i18n.js';
 import { siteGeometry } from './ephemeris.js';
 import { horizonProfile, horizonAt, isMeasured } from './horizon.js';
 import { SUN_LIMB_DEG } from './metrics.js';
@@ -33,6 +33,15 @@ const SPEEDS = [
 
 const SCRUB_HALF = 354; // half a lunar day, in hours
 
+// The side index of the map page, in reading order.
+const RAIL = [
+  ['shadow', 'map.panel.shadow'],
+  ['probe', 'map.panel.probe'],
+  ['sites', 'map.panel.sites'],
+  ['orbit', 'map.panel.orbit'],
+  ['south', 'map.panel.south'],
+];
+
 export function renderMap(root, ctx) {
   const { config, state, actions } = ctx;
   const sites = config.sites;
@@ -46,23 +55,42 @@ export function renderMap(root, ctx) {
       <h1 class="sr-only">${esc(t('map.title'))}</h1>
       <div class="globe-host map-globe" id="globe-host" role="img"
         aria-label="${esc(t('map.lede'))}"></div>
+      <div class="map-hero-bar">
+        <p class="hud-time mono" id="live-clock">—</p>
+        <p class="map-hero-hint">${esc(t('map.heroHint'))}</p>
+      </div>
+    </section>
 
-      <div class="map-shadow">
-        <div class="shadow-top">
-          <p class="shadow-kicker">${esc(t('map.kicker'))}</p>
-          <p class="hud-time mono" id="live-clock">—</p>
-          <p class="shadow-offset mono" id="scrub-offset">0 h</p>
-        </div>
+    <section class="container map-body">
+      <nav class="map-rail" aria-label="${esc(t('map.rail'))}">
+        ${RAIL.map(([id, key], i) => `<button type="button" data-panel="${id}" aria-pressed="${i === 0}">
+          <span class="rail-n" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span>
+          <span class="rail-t">${esc(t(key))}</span>
+        </button>`).join('')}
+      </nav>
 
-        <canvas class="shadow-strip" id="shadow-strip" height="34"
-          aria-label="${esc(t('map.subsolar'))}"></canvas>
+      <div class="map-panels">
+        <div class="map-panel" data-panel="shadow">
+          <header class="panel-head">
+            <h2>${esc(t('map.kicker'))}</h2>
+            <p class="shadow-offset mono" id="scrub-offset">0 h</p>
+          </header>
 
-        <div class="shadow-bottom">
+          <canvas class="shadow-strip" id="shadow-strip" height="34"
+            aria-label="${esc(t('map.subsolar'))}"></canvas>
+
           <div class="live-speed" role="group" aria-label="${esc(t('map.speed'))}">
             ${SPEEDS.map((s, i) => `<button type="button" class="chip" data-speed="${s.factor}" aria-pressed="${i === 0}">${s.label}</button>`).join('')}
             <button type="button" class="chip" id="live-pause" aria-pressed="false">${esc(t('map.pause'))}</button>
             <button type="button" class="chip" id="live-now">${esc(t('map.now'))}</button>
           </div>
+
+          <div class="hud-scrub">
+            <input type="range" id="time-scrub" min="0" max="708" step="1" value="354"
+              aria-label="${esc(t('map.scrub'))}">
+            <p class="hint">${esc(t('map.scrubHint'))}</p>
+          </div>
+
           <dl class="shadow-facts">
             <div><dt>${esc(t('map.subsolar'))}</dt><dd class="mono" id="live-subsolar">—</dd></div>
             <div><dt>${esc(t('map.poleSun'))}</dt><dd class="mono" id="live-pole">—</dd></div>
@@ -70,69 +98,65 @@ export function renderMap(root, ctx) {
           </dl>
         </div>
 
-        <div class="hud-scrub">
-          <input type="range" id="time-scrub" min="0" max="708" step="1" value="354"
-            aria-label="${esc(t('map.scrub'))}">
-          <p class="hint">${esc(t('map.scrubHint'))}</p>
+        <div class="map-panel" data-panel="probe" hidden>
+          <header class="panel-head">
+            <h2>${esc(t('map.probe.title'))}</h2>
+            <p>${esc(t('map.probe.lede'))}</p>
+          </header>
+          <form id="probe-form" novalidate>
+            <div class="probe-fields">
+              <label class="field">
+                <span>${esc(t('map.probe.lat'))}</span>
+                <input type="number" id="probe-lat" step="0.01" min="-90" max="90"
+                  value="${probe ? probe.lat.toFixed(2) : ''}" placeholder="-84.50">
+              </label>
+              <label class="field">
+                <span>${esc(t('map.probe.lon'))}</span>
+                <input type="number" id="probe-lon" step="0.01" min="-180" max="360"
+                  value="${probe ? probe.lon.toFixed(2) : ''}" placeholder="12.30">
+              </label>
+            </div>
+            <div class="panel-actions">
+              <button type="submit" class="btn primary">${esc(t('map.probe.place'))}</button>
+              <button type="button" class="btn quiet" id="probe-clear">${esc(t('map.probe.clear'))}</button>
+            </div>
+            <dl class="probe-out" id="probe-out" aria-live="polite"></dl>
+          </form>
+        </div>
+
+        <div class="map-panel" data-panel="sites" hidden>
+          <header class="panel-head">
+            <h2>${esc(t('map.list.title'))}</h2>
+            <p>${esc(t('map.list.lede'))}</p>
+          </header>
+          <ul class="clps-chips" id="live-list">
+            ${list.map((site) => `<li>
+              <button type="button" class="clps-chip" data-site="${esc(site.id)}" data-state="${esc(site.id)}">
+                <span class="chip-dot" aria-hidden="true"></span>
+                <span class="chip-name">${esc(siteName(site))}</span>
+                <span class="chip-value mono">—</span>
+              </button>
+            </li>`).join('')}
+          </ul>
+          <p class="data-note">${esc(t('map.clockNote'))}</p>
+        </div>
+
+        <div class="map-panel" data-panel="orbit" hidden>
+          <header class="panel-head">
+            <h2>${esc(t('map.orbit.title'))}</h2>
+            <p>${esc(t('map.orbit.lede'))}</p>
+          </header>
+          <canvas id="orrery" height="260"></canvas>
+        </div>
+
+        <div class="map-panel" data-panel="south" hidden>
+          <header class="panel-head">
+            <h2>${esc(t('map.south.title'))}</h2>
+            <p>${esc(t('map.south.lede'))}</p>
+          </header>
+          <div class="globe-host globe-host-south" id="south-host"></div>
         </div>
       </div>
-
-      <form class="map-probe" id="probe-form" novalidate>
-        <div class="probe-head">
-          <h2>${esc(t('map.probe.title'))}</h2>
-          <p>${esc(t('map.probe.lede'))}</p>
-        </div>
-        <div class="probe-fields">
-          <label class="field">
-            <span>${esc(t('map.probe.lat'))}</span>
-            <input type="number" id="probe-lat" step="0.01" min="-90" max="90"
-              value="${probe ? probe.lat.toFixed(2) : ''}" placeholder="-84.50">
-          </label>
-          <label class="field">
-            <span>${esc(t('map.probe.lon'))}</span>
-            <input type="number" id="probe-lon" step="0.01" min="-180" max="360"
-              value="${probe ? probe.lon.toFixed(2) : ''}" placeholder="12.30">
-          </label>
-          <button type="submit" class="btn primary">${esc(t('map.probe.place'))}</button>
-          <button type="button" class="btn quiet" id="probe-clear">${esc(t('map.probe.clear'))}</button>
-        </div>
-        <dl class="probe-out" id="probe-out" aria-live="polite"></dl>
-      </form>
-    </section>
-
-    <section class="container section map-mid">
-      <div class="orbit-card">
-        <header>
-          <h2>${esc(t('map.orbit.title'))}</h2>
-          <p>${esc(t('map.orbit.lede'))}</p>
-        </header>
-        <canvas id="orrery" height="260"></canvas>
-      </div>
-
-      <div class="map-list">
-        <header>
-          <h2>${esc(t('map.list.title'))}</h2>
-          <p>${esc(t('map.list.lede'))}</p>
-        </header>
-        <ul class="clps-chips" id="live-list">
-          ${list.map((site) => `<li>
-            <button type="button" class="clps-chip" data-site="${esc(site.id)}" data-state="${esc(site.id)}">
-              <span class="chip-dot" aria-hidden="true"></span>
-              <span class="chip-name">${esc(siteName(site))}</span>
-              <span class="chip-value mono">—</span>
-            </button>
-          </li>`).join('')}
-        </ul>
-        <p class="data-note">${esc(t('map.clockNote'))}</p>
-      </div>
-    </section>
-
-    <section class="map-south">
-      <header class="container south-head">
-        <h2>${esc(t('map.south.title'))}</h2>
-        <p>${esc(t('map.south.lede'))}</p>
-      </header>
-      <div class="globe-host globe-host-south" id="south-host"></div>
     </section>`;
 
   const clockEl = root.querySelector('#live-clock');
@@ -159,6 +183,7 @@ export function renderMap(root, ctx) {
   let disposed = false;
   let scene = null;
   let south = null;
+  let orrery = null;
   let backendSub = null;
   let backendAt = 0;
   let lastPaint = 0;
@@ -177,40 +202,51 @@ export function renderMap(root, ctx) {
     c.setTransform(2, 0, 0, 2, 0, 0);
     c.clearRect(0, 0, w, h);
 
-    // One column per degree of longitude; the lit hemisphere is the 180°
-    // centred on the subsolar point, so the dark bands are the night side.
-    for (let lon = 0; lon < 360; lon += 1) {
-      const delta = Math.abs(((lon - subLon + 540) % 360) - 180);
-      const lit = delta < 90;
-      const x = (lon / 360) * w;
-      c.fillStyle = lit ? 'rgba(246, 178, 60, 0.55)' : 'rgba(30, 41, 59, 0.85)';
-      c.fillRect(x, 0, w / 360 + 0.6, h);
+    const xOf = (lon) => (((lon % 360) + 360) % 360) / 360 * w;
+
+    // Night everywhere, then the lit hemisphere as one arc (two rectangles
+    // when it wraps past 0/360). Two crisp bands beat 360 one-pixel columns.
+    c.fillStyle = 'rgba(24, 33, 50, 0.92)';
+    c.fillRect(0, 0, w, h);
+
+    const start = xOf(subLon - 90);
+    const end = xOf(subLon + 90);
+    c.fillStyle = 'rgba(246, 178, 60, 0.55)';
+    if (start <= end) {
+      c.fillRect(start, 0, end - start, h);
+    } else {
+      c.fillRect(start, 0, w - start, h);
+      c.fillRect(0, 0, end, h);
     }
 
-    // The terminator, then where it will be in 24 h: the shadow really moves.
-    c.fillStyle = 'rgba(255,255,255,0.85)';
-    for (const lon of [subLon + 90, subLon - 90]) {
-      const x = (((lon % 360) + 360) % 360) / 360 * w;
-      c.fillRect(x - 0.7, 0, 1.4, h);
-    }
-    c.fillStyle = 'rgba(168, 242, 255, 0.75)';
-    for (const lon of [nextLon + 90, nextLon - 90]) {
-      const x = (((lon % 360) + 360) % 360) / 360 * w;
-      c.fillRect(x - 0.6, h - 5, 1.2, 5);
-    }
+    // Longitude ticks.
+    c.fillStyle = 'rgba(8, 12, 20, 0.35)';
+    for (let lon = 0; lon < 360; lon += 30) c.fillRect(xOf(lon), 0, 1, h);
+
+    // The terminator now, and where it will be in 24 h: the shadow really moves.
+    c.fillStyle = 'rgba(255,255,255,0.9)';
+    for (const lon of [subLon + 90, subLon - 90]) c.fillRect(xOf(lon) - 0.8, 0, 1.6, h);
+    c.fillStyle = 'rgba(168, 242, 255, 0.8)';
+    for (const lon of [nextLon + 90, nextLon - 90]) c.fillRect(xOf(lon) - 0.7, h - 6, 1.4, 6);
 
     c.font = '9px ui-monospace, monospace';
-    c.fillStyle = 'rgba(203,213,225,0.7)';
     c.textAlign = 'center';
+    c.fillStyle = 'rgba(8, 12, 20, 0.75)';
     for (const lon of [0, 90, 180, 270]) {
-      c.fillText(`${lon}°`, (lon / 360) * w + (lon === 0 ? 12 : 0), h - 8);
+      c.fillText(`${lon}°`, Math.min(w - 14, Math.max(14, xOf(lon))), h - 8);
     }
-    c.textAlign = 'left';
-    c.fillStyle = 'rgba(246, 178, 60, 0.9)';
-    c.fillText(t('map.legend.sun'), 10, 13);
-    c.fillStyle = 'rgba(203,213,225,0.55)';
-    c.textAlign = 'right';
-    c.fillText(t('map.legend.night'), w - 10, 13);
+
+    // Labels sit on a dark pill: they must read over the gold band too.
+    const label = (text, x, align) => {
+      c.textAlign = align;
+      const boxW = c.measureText(text).width + 10;
+      c.fillStyle = 'rgba(6, 10, 18, 0.62)';
+      c.fillRect(align === 'left' ? x - 5 : x - boxW + 5, 1, boxW, 14);
+      c.fillStyle = 'rgba(236, 242, 252, 0.92)';
+      c.fillText(text, x, 12);
+    };
+    label(t('map.legend.sun'), 10, 'left');
+    label(t('map.legend.night'), w - 10, 'right');
   };
 
   /* ----------------------------------------------------------------- probe */
@@ -249,8 +285,6 @@ export function renderMap(root, ctx) {
         <dd class="mono">${fmtNum(g.sun.alt, 2)}° <span class="muted">/ ${fmtNum(g.sun.az, 0)}°</span></dd></div>
       <div><dt>${esc(t('map.probe.earth'))}</dt>
         <dd class="mono">${fmtNum(g.earth.alt, 2)}° <span class="muted">/ ${fmtNum(g.earth.az, 0)}°</span></dd></div>
-      <div><dt>${esc(t('map.probe.relief'))}</dt>
-        <dd class="mono" title="${esc(t('map.probe.flat'))}">0.00° <span class="muted">${esc(t('map.probe.flat'))}</span></dd></div>
       <div><dt>${esc(t('map.probe.lat'))} / ${esc(t('map.probe.lon'))}</dt>
         <dd class="mono">${fmtNum(probe.lat, 2)}° / ${fmtNum(probe.lon, 2)}°</dd></div>
       <div class="probe-state" data-lit="${lit}">
@@ -269,8 +303,12 @@ export function renderMap(root, ctx) {
     subEl.textContent = `${fmtNum(sub.lat, 2)}° / ${fmtNum(sub.lon, 2)}°`;
     poleEl.textContent = `${fmtNum(g.sun.alt, 2)}°`;
 
-    const next = siteGeometry(poleSite, simMs + 86400000).subSolar;
-    drawStrip(sub.lon, next.lon);
+    // The ribbon only lives in its own panel: do not paint a hidden canvas.
+    const stripVisible = stripCanvas.offsetParent !== null;
+    if (stripVisible) {
+      const next = siteGeometry(poleSite, simMs + 86400000).subSolar;
+      drawStrip(sub.lon, next.lon);
+    }
 
     let lit = 0;
     for (const site of list) {
@@ -381,28 +419,57 @@ export function renderMap(root, ctx) {
     api.setProbe(probe);
     api.setTime(simMs);
   }).catch(() => {
-    root.querySelector('#globe-host').innerHTML = `<p class="scene-hint">${esc(t('map.fallback'))}</p>`;
+    root.querySelector('#globe-host').innerHTML = `<p class="scene-hint is-fallback">${esc(t('map.fallback'))}</p>`;
   });
 
-  mountMoon(root.querySelector('#south-host'), {
-    ...common,
-    view: 'south',
-    hint: '',
-  }).then((api) => {
-    if (disposed) { api.dispose(); return; }
-    south = api;
-    api.setProbe(probe);
-    api.setTime(simMs);
-  }).catch(() => {});
+  // The lower panels are built the first time they are opened: a hidden
+  // canvas has no width, and a second WebGL context costs memory we do not
+  // need until the reader asks for the pole view.
+  const mountSouth = () => {
+    if (south) return;
+    mountMoon(root.querySelector('#south-host'), {
+      ...common,
+      view: 'south',
+      hint: '',
+    }).then((api) => {
+      if (disposed) { api.dispose(); return; }
+      south = api;
+      api.setProbe(probe);
+      api.setTime(simMs);
+    }).catch(() => {});
+  };
 
-  const orrery = createOrrery(root.querySelector('#orrery'), {
-    getMs: () => simMs,
-    setMs: (ms) => {
-      setPaused(true);
-      simMs = ms;
-      paint();
-    },
+  const mountOrrery = () => {
+    if (orrery) return;
+    orrery = createOrrery(root.querySelector('#orrery'), {
+      getMs: () => simMs,
+      setMs: (ms) => {
+        setPaused(true);
+        simMs = ms;
+        paint();
+      },
+    });
+  };
+
+  /* ------------------------------------------------------------ side menu */
+
+  const railButtons = [...root.querySelectorAll('.map-rail [data-panel]')];
+  const panels = [...root.querySelectorAll('.map-panel')];
+
+  const openPanel = (id) => {
+    railButtons.forEach((button) => {
+      button.setAttribute('aria-pressed', String(button.dataset.panel === id));
+    });
+    panels.forEach((panel) => { panel.hidden = panel.dataset.panel !== id; });
+    if (id === 'south') mountSouth();
+    if (id === 'orbit') mountOrrery();
+    if (id === 'shadow') paint();
+  };
+
+  railButtons.forEach((button) => {
+    button.addEventListener('click', () => openPanel(button.dataset.panel));
   });
+  openPanel('shadow');
 
   // The Python service, when it runs, supplies the subsolar point; without it
   // the local ephemeris is already on screen.
@@ -426,11 +493,10 @@ export function renderMap(root, ctx) {
     disposed = true;
     cancelAnimationFrame(raf);
     clearInterval(backendTimer);
-    orrery.destroy();
+    orrery?.destroy();
     scene?.dispose();
     south?.dispose();
   };
 }
 
-export { SCRUB_HALF };
-void fmtDate;
+

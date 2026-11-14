@@ -1,7 +1,8 @@
 {
   "version": "2026.11.13",
   "frame": "MOON_ME",
-  "terrain": "illustrative",
+  "terrain": "LOLA LDEM 80S (80 m/pixel) pour les sites polaires ; profil analytique ailleurs",
+  "terrainFile": "data/terrain.json",
   "sites": [
     {
       "id": "malapert_a",

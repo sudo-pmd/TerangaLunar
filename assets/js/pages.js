@@ -19,7 +19,74 @@ import {
   horizonSvg, timelineSvg, heatmapSvg, escapeXml as esc,
 } from './charts.js';
 import { siteCard } from './views.js';
-import { probeBackend, fetchSubsolar } from './live.js';
+import { probeBackend } from './live.js';
+import { mountMoon } from './moon3d.js';
+
+/**
+ * Small circular globe used as a figure on the catalogue and science pages.
+ * Same scene, same texture, same terminator as the big map — only the framing
+ * differs, and it is not interactive.
+ */
+function mountMini(host, opts) {
+  if (!host) return { setView() {}, dispose() {} };
+  let scene = null;
+  let disposed = false;
+  mountMoon(host, { ...opts, mini: true, live: true, hint: '', onSelect: undefined }).then((api) => {
+    if (disposed) { api.dispose(); return; }
+    scene = api;
+    if (Number.isFinite(opts.lat)) api.setView(opts.lat, opts.lon || 0);
+  }).catch(() => {});
+  return {
+    setView(lat, lon) { scene?.setView(lat, lon); },
+    setProbe(point) { scene?.setProbe(point); },
+    dispose() {
+      disposed = true;
+      scene?.dispose();
+    },
+  };
+}
+
+// Longitude 0 is the centre of the near side, but the shader samples the
+// equirectangular map mirrored, so the camera that shows the near side sits at
+// longitude 180 in selenographic coordinates.
+const GLOBE_VIEWS = [
+  ['south', -90, 0],
+  ['near', 6, 180],
+  ['far', 6, 0],
+];
+
+function globeFigure({ id, title, note, extra = '' }) {
+  return `<section class="container globe-figure">
+    <div class="globe-circle" id="${id}" role="img" aria-label="${esc(title)}"></div>
+    <div class="globe-caption">
+      <h2>${esc(title)}</h2>
+      <p>${esc(note)}</p>
+      ${extra}
+    </div>
+  </section>`;
+}
+
+function globeSwitcher(root, mini) {
+  const buttons = [...root.querySelectorAll('[data-globe-view]')];
+  buttons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const found = GLOBE_VIEWS.find(([key]) => key === button.dataset.globeView);
+      if (!found) return;
+      mini.setView(found[1], found[2]);
+      buttons.forEach((other) => {
+        other.classList.toggle('is-active', other === button);
+        other.setAttribute('aria-pressed', String(other === button));
+      });
+    });
+  });
+}
+
+function viewButtons() {
+  return `<div class="segmented globe-views" role="group" aria-label="${esc(t('globe.view.label'))}">
+    ${GLOBE_VIEWS.map(([key], i) => `<button type="button" class="seg${i === 0 ? ' is-active' : ''}"
+      data-globe-view="${key}" aria-pressed="${i === 0}">${esc(t(`globe.view.${key}`))}</button>`).join('')}
+  </div>`;
+}
 
 const RAD = Math.PI / 180;
 
@@ -45,6 +112,12 @@ export function renderSites(root, ctx) {
 
   root.innerHTML = `
     ${pageHead(t('sites.kicker'), t('sites.title'), t('sites.lede'))}
+    ${globeFigure({
+    id: 'sites-globe',
+    title: t('globe.sites.title'),
+    note: t('globe.sites.note'),
+    extra: viewButtons(),
+  })}
     <section class="container section" aria-labelledby="catalogue-title">
       <header class="section-head">
         <h2 id="catalogue-title">${esc(t('home.list.title'))}</h2>
@@ -80,7 +153,31 @@ export function renderSites(root, ctx) {
   };
   root.querySelector('#filter-company').addEventListener('change', applyFilters);
   root.querySelector('#filter-status').addEventListener('change', applyFilters);
-  return null;
+
+  const mini = mountMini(root.querySelector('#sites-globe'), {
+    sites,
+    dateMs: Date.now(),
+    lat: -90,
+    lon: 0,
+  });
+  globeSwitcher(root, mini);
+
+  // Hovering or focusing a card turns the globe to that site's real position:
+  // the list and the sphere say the same thing.
+  const byId = new Map(sites.map((site) => [site.id, site]));
+  const focus = (target) => {
+    const link = target.closest?.('.site-card-link');
+    if (!link) return;
+    const id = decodeURIComponent((link.getAttribute('href') || '').replace('#/site/', ''));
+    const site = byId.get(id);
+    if (!site) return;
+    mini.setView(site.lat, site.lon);
+    mini.setProbe({ lat: site.lat, lon: site.lon });
+  };
+  grid.addEventListener('pointerover', (event) => focus(event.target));
+  grid.addEventListener('focusin', (event) => focus(event.target));
+
+  return () => mini.dispose();
 }
 
 /* The live map lives in its own module: it owns two WebGL scenes. */
@@ -318,6 +415,13 @@ export function renderScience(root, ctx) {
       <p class="data-note">${esc(t('science.precision.pass'))}</p>
     </section>
 
+    ${globeFigure({
+    id: 'science-globe',
+    title: t('globe.science.title'),
+    note: t('globe.science.note'),
+    extra: `<p class="globe-readout mono" id="science-subsolar">—</p>`,
+  })}
+
     <section class="container section">
       <div class="link-row">
         <a href="#/help">${esc(t('science.openMethod'))}</a>
@@ -334,7 +438,23 @@ export function renderScience(root, ctx) {
     el.textContent = status?.online ? t('science.api.online') : t('science.api.offline');
   });
 
-  return null;
+  // The globe here shows the terminator at the moment the page was drawn, with
+  // the real subsolar point printed beside it.
+  const when = Date.now();
+  const mini = mountMini(root.querySelector('#science-globe'), {
+    sites,
+    dateMs: when,
+    lat: -20,
+    lon: 0,
+  });
+  const g = siteGeometry(sites[0], when);
+  const subsolar = root.querySelector('#science-subsolar');
+  if (subsolar) {
+    subsolar.textContent = `${t('globe.subsolar')} · ${fmtNum(g.subSolar.lat, 2)}° / ${fmtNum(g.subSolar.lon, 2)}°`;
+  }
+  globeSwitcher(root, mini);
+
+  return () => mini.dispose();
 }
 
 export { pageHead };

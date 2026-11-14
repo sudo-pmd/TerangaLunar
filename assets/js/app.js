@@ -234,28 +234,17 @@ function onHashChange() {
 const loader = {
   el: null,
   start: 0,
-  done: new Set(),
 
   init() {
     this.el = document.getElementById('loader');
     this.start = performance.now();
-    const label = this.el?.querySelector('#loader-status');
-    if (label) label.textContent = t('boot.loading');
-    for (const item of this.el?.querySelectorAll('[data-step]') || []) {
-      item.textContent = t(`boot.${item.dataset.step}`);
-    }
-    const note = this.el?.querySelector('.loader-note');
-    if (note) note.textContent = t('boot.note');
+    this.line = this.el?.querySelector('#loader-line');
+    if (this.line) this.line.textContent = t('boot.loading');
   },
 
+  /** One line, one fact: what is being loaded right now. */
   step(id) {
-    if (this.done.has(id)) return;
-    this.done.add(id);
-    const el = this.el?.querySelector(`[data-step="${id}"]`);
-    if (el) el.dataset.done = 'true';
-    const bar = this.el?.querySelector('#loader-bar');
-    const total = this.el?.querySelectorAll('[data-step]').length || 3;
-    if (bar) bar.style.width = `${Math.round((this.done.size / total) * 100)}%`;
+    if (this.line) this.line.textContent = `${t(`boot.${id}`)}…`;
   },
 
   async finish() {
@@ -282,6 +271,8 @@ function preloadImage(src) {
 }
 
 async function boot() {
+  // Tells the inline watchdog in index.html that the modules did load.
+  window.__bootReady = true;
   mountStarfield(document.body);
   app.root = document.getElementById('app');
   loader.init();
@@ -309,13 +300,10 @@ async function boot() {
   loader.step('config');
 
   // Real horizon masks: 720 azimuths per site, measured on LOLA LDEM 80S.
-  if (app.config.terrain) {
-    const count = installTerrain(app.config.terrain);
-    if (count) loader.step('terrain');
-    else loader.step('terrain');
-  } else {
-    loader.step('terrain');
-  }
+  // Without the file the sites keep their analytic envelope; either way the
+  // boot continues, because the map is usable without measured terrain.
+  if (app.config.terrain) installTerrain(app.config.terrain);
+  loader.step('terrain');
 
   app.state = readState();
   initLang(app.state.language);
