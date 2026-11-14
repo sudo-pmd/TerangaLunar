@@ -1,0 +1,3 @@
+# Offline precompute only; the web application has no Python dependency.
+spiceypy>=6.0
+numpy>=1.24

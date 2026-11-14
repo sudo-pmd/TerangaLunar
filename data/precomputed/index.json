@@ -1,0 +1,8 @@
+{
+  "generated": null,
+  "frame": "MOON_ME",
+  "ephemeris": "none",
+  "note": "Empty on purpose: run pipeline/precompute.py to fill this directory. With no entries the application uses its analytical Meeus model.",
+  "kernels": [],
+  "sites": []
+}
