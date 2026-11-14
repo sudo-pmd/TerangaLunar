@@ -28,6 +28,10 @@ const MAP_PREVIEW = 'assets/img/low/moon.jpg';    // 2048 x 1024, first paint
 // LOLA relief, highest resolution first. The first entry is the slot for a
 // better export of the same product: drop the file in and it is used, else the
 // 8-bit global map stays.
+// Zoom level of detail: the 4K map is what everyone gets; the 8K export is
+// only fetched once the camera is close enough for the difference to be
+// visible, and it is never requested twice.
+const MAP_ZOOM = 'assets/img/moon-8k.jpg'; // optional-asset: 8K mikmap, loaded on zoom
 const RELIEF_IMAGES = [
   'assets/img/ldem_hi.jpg', // optional-asset: higher-resolution LOLA export, used when present
   'assets/img/ldem_3_8bit.jpg',
@@ -418,6 +422,22 @@ function createScene(THREE, OrbitControls, container, opts) {
 
   loader.load(MAP_PREVIEW, (texture) => applyMap(texture, false), undefined, () => {});
 
+  // Fetched on demand by `upgradeOnZoom`, below.
+  let zoomAsked = false;
+  const upgradeOnZoom = () => {
+    if (zoomAsked || mini) return;
+    zoomAsked = true;
+    loader.load(MAP_ZOOM, (texture) => {
+      if (!texture?.image?.width || disposed) return;
+      // 8K does not need mipmaps here: a third less video memory, and the
+      // surface is seen close up where mip levels barely matter.
+      texture.generateMipmaps = false;
+      texture.minFilter = THREE.LinearFilter;
+      applyMap(texture, true);
+      container.dataset.moonTexture = 'photo-8k';
+    }, undefined, () => {});
+  };
+
   // Only the wide views need the 4K photo: on a 300 px circle it is 32 MB of
   // video memory for pixels nobody can see.
   if (!mini && view !== 'south') {
@@ -526,6 +546,9 @@ function createScene(THREE, OrbitControls, container, opts) {
     return 1.07 / Math.sin(Math.min(vFov, hFov) / 2);
   };
 
+  // Set when the landing page opens: a short dolly-in on the globe.
+  let intro = null;
+
   const frameGlobe = () => {
     const distance = fitDistance();
     // Slightly above the southern hemisphere: the polar sites are the subject,
@@ -599,6 +622,16 @@ function createScene(THREE, OrbitControls, container, opts) {
     controls.maxPolarAngle = Math.PI - 0.02;
   } else if (fit) {
     frameGlobe();
+    // Arrival: the Moon comes forward, then settles into exactly the framing
+    // it would have had without the effect.
+    if (!reducedMotion) {
+      const to = camera.position.clone();
+      camera.position.copy(to).multiplyScalar(2.1);
+      camera.lookAt(controls.target);
+      // t0 stays 0 until the first frame: the clock must start when the scene
+      // is actually on screen, not when the textures started loading.
+      intro = { from: camera.position.clone(), to, t0: 0, dur: 2600 };
+    }
     // A very slow drift keeps the landing page alive without moving the
     // framing: the camera orbits, the distance does not change.
     controls.autoRotate = !reducedMotion;
@@ -684,7 +717,7 @@ function createScene(THREE, OrbitControls, container, opts) {
     camera.aspect = container.clientWidth / container.clientHeight;
     camera.updateProjectionMatrix();
     if (mini && !userMoved) setView(currentView.lat, currentView.lon);
-    if (fit && !userMoved) frameGlobe();
+    if (fit && !userMoved && !intro) frameGlobe();
     if (view === 'south' && !userMoved) framePole();
   };
   const observer = new ResizeObserver(resize);
@@ -698,6 +731,19 @@ function createScene(THREE, OrbitControls, container, opts) {
   const tick = () => {
     if (disposed) return;
     raf = requestAnimationFrame(tick);
+
+    // Close enough that the base map starts to blur: fetch the next level.
+    if (camera.position.length() < 2.05 && container.clientWidth > 480) upgradeOnZoom();
+
+    if (intro) {
+      if (!intro.t0) intro.t0 = performance.now();
+      const k = Math.min(1, (performance.now() - intro.t0) / intro.dur);
+      camera.position.lerpVectors(intro.from, intro.to, easeInOutCubic(k));
+      camera.lookAt(controls.target);
+      container.dataset.cam = `${camera.position.toArray().map((v) => v.toFixed(2)).join(',')}|intro${k.toFixed(2)}`;
+      if (k >= 1) intro = null;
+    }
+
     controls.update();
 
     if (mini) {

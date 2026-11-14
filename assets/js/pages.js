@@ -112,13 +112,9 @@ export function renderSites(root, ctx) {
 
   root.innerHTML = `
     ${pageHead(t('sites.kicker'), t('sites.title'), t('sites.lede'))}
-    ${globeFigure({
-    id: 'sites-globe',
-    title: t('globe.sites.title'),
-    note: t('globe.sites.note'),
-    extra: viewButtons(),
-  })}
-    <section class="container section" aria-labelledby="catalogue-title">
+    <div class="container sites-layout">
+    <div class="sites-main">
+    <section class="section" aria-labelledby="catalogue-title">
       <header class="section-head">
         <h2 id="catalogue-title">${esc(t('home.list.title'))}</h2>
         <p>${esc(t('sites.filterHint'))}</p>
@@ -140,7 +136,19 @@ export function renderSites(root, ctx) {
         </label>
       </div>
       <ul class="site-grid" id="site-grid">${sites.map(siteCard).join('')}</ul>
-    </section>`;
+    </section>
+    </div>
+
+    <aside class="sites-aside">
+      <div class="science-globe-card">
+        <div class="globe-circle" id="sites-globe" role="img" aria-label="${esc(t('globe.sites.title'))}"></div>
+        <h2>${esc(t('globe.sites.title'))}</h2>
+        <p>${esc(t('globe.sites.note'))}</p>
+        <p class="globe-readout mono" id="sites-focus">—</p>
+        ${viewButtons()}
+      </div>
+    </aside>
+    </div>`;
 
   const grid = root.querySelector('#site-grid');
   const applyFilters = () => {
@@ -173,6 +181,8 @@ export function renderSites(root, ctx) {
     if (!site) return;
     mini.setView(site.lat, site.lon);
     mini.setProbe({ lat: site.lat, lon: site.lon });
+    const readout = root.querySelector('#sites-focus');
+    if (readout) readout.textContent = `${siteName(site)} · ${fmtNum(site.lat, 2)}° / ${fmtNum(site.lon, 2)}°`;
   };
   grid.addEventListener('pointerover', (event) => focus(event.target));
   grid.addEventListener('focusin', (event) => focus(event.target));
@@ -194,27 +204,39 @@ export function renderLearn(root, ctx) {
   const { config, state, actions } = ctx;
   const candidates = polarSites(config);
   const local = {
-    step: 1,
+    step: 'clps',
     siteId: (candidates[0] || config.sites[0]).id,
     dateMs: state.dateMs,
     stayDays: state.stayDays,
   };
 
+  const steps = [
+    ['clps', t('learn.s0')],
+    [1, t('learn.s1')],
+    [2, t('learn.s2')],
+    [3, t('learn.s3')],
+    [4, t('learn.s4')],
+  ];
+
   root.innerHTML = `
     ${pageHead(t('learn.kicker'), t('learn.title'), t('learn.lede'))}
-    <section class="container section">
-      <div class="steps">
+    <section class="container learn-layout">
+      <div class="learn-main">
         <nav class="step-nav" aria-label="${esc(t('learn.title'))}">
-          ${[1, 2, 3, 4].map((n) => `<button type="button" data-step="${n}">
-            <span class="step-num">0${n}</span>
-            <span>${esc(t(`learn.s${n}`))}</span>
+          ${steps.map(([key, label], i) => `<button type="button" data-step="${key}">
+            <span class="step-num">${String(i + 1).padStart(2, '0')}</span>
+            <span>${esc(label)}</span>
           </button>`).join('')}
         </nav>
         <div class="step-body" id="learn-body" aria-live="polite"></div>
       </div>
-      <p class="data-note" style="margin-top:var(--s-5)">
-        <a href="#/discover">${esc(t('nav.discover'))}</a> · <a href="#/help">${esc(t('nav.method'))}</a>
-      </p>
+
+      <aside class="learn-globe">
+        <div class="globe-circle" id="learn-globe" role="img"
+          aria-label="${esc(t('globe.science.title'))}"></div>
+        ${viewButtons()}
+        <p class="globe-readout mono" id="learn-readout">—</p>
+      </aside>
     </section>`;
 
   const body = root.querySelector('#learn-body');
@@ -250,7 +272,7 @@ export function renderLearn(root, ctx) {
       });
     }
     const open = body.querySelector('[data-open-sheet]');
-    if (open) {
+    if (open && site) {
       open.addEventListener('click', () => actions.openSite(site.id, local.dateMs));
     }
   };
@@ -348,26 +370,90 @@ export function renderLearn(root, ctx) {
     };
   };
 
-  const builders = { 1: step1, 2: step2, 3: step3, 4: step4 };
+  /* What CLPS is, before any number: the programme, then what it delivers. */
+  const stepClps = () => {
+    const landers = config.sites.filter((s) => s.type !== 'reference');
+    return {
+      site: null,
+      html: `<h2>${esc(t('learn.c1t'))}</h2>
+        <p class="step-lede">${esc(t('learn.c1b1'))}</p>
+
+        <div class="science-grid" style="margin-block:var(--s-4)">
+          <article class="stat tone-sun">
+            <h3 class="stat-label">${esc(t('learn.c1k1'))}</h3>
+            <p class="stat-value mono">17</p>
+            <p class="stat-help">${esc(t('learn.c1h1'))}</p>
+          </article>
+          <article class="stat">
+            <h3 class="stat-label">${esc(t('learn.c1k2'))}</h3>
+            <p class="stat-value mono">${landers.length}</p>
+            <p class="stat-help">${esc(t('learn.c1h2'))}</p>
+          </article>
+        </div>
+
+        <p class="step-lede">${esc(t('learn.c1b2'))}</p>
+
+        <ul class="mission-list">
+          ${landers.map((site) => `<li>
+            <button type="button" class="mission-chip" data-focus-site="${esc(site.id)}">
+              <span class="m-name">${esc(siteName(site))}</span>
+              <span class="m-meta mono">${fmtNum(site.lat, 1)}° / ${fmtNum(site.lon, 1)}°</span>
+            </button>
+          </li>`).join('')}
+        </ul>
+
+        <p class="data-note">${esc(t('learn.c1b3'))}</p>`,
+    };
+  };
+
+  const builders = { clps: stepClps, 1: step1, 2: step2, 3: step3, 4: step4 };
+
+  // The globe on the right follows the step: it points at the site under
+  // discussion, and the mission chips turn it here and there.
+  const mini = mountMini(root.querySelector('#learn-globe'), {
+    sites: config.sites,
+    dateMs: Date.now(),
+    lat: -90,
+    lon: 0,
+  });
+  globeSwitcher(root, mini);
+  const readout = root.querySelector('#learn-readout');
+
+  const pointAt = (site) => {
+    if (!site) return;
+    mini.setView(site.lat, site.lon);
+    mini.setProbe({ lat: site.lat, lon: site.lon });
+    if (readout) readout.textContent = `${siteName(site)} · ${fmtNum(site.lat, 2)}° / ${fmtNum(site.lon, 2)}°`;
+  };
 
   const paint = () => {
     const view = builders[local.step]();
     body.innerHTML = view.html;
     bindCommon(view.site);
     root.querySelectorAll('[data-step]').forEach((button) => {
-      button.setAttribute('aria-current', Number(button.dataset.step) === local.step ? 'step' : 'false');
+      button.setAttribute('aria-current', String(button.dataset.step) === String(local.step) ? 'step' : 'false');
     });
+
+    body.querySelectorAll('[data-focus-site]').forEach((chip) => {
+      const site = config.byId.get(chip.dataset.focusSite);
+      const activate = () => pointAt(site);
+      chip.addEventListener('pointerenter', activate);
+      chip.addEventListener('focus', activate);
+      chip.addEventListener('click', activate);
+    });
+
+    if (view.site) pointAt(view.site);
   };
 
   root.querySelectorAll('[data-step]').forEach((button) => {
     button.addEventListener('click', () => {
-      local.step = Number(button.dataset.step);
+      local.step = button.dataset.step === 'clps' ? 'clps' : Number(button.dataset.step);
       paint();
     });
   });
 
   paint();
-  return null;
+  return () => mini.dispose();
 }
 
 /* --------------------------------------------------------------- science */
@@ -383,7 +469,9 @@ export function renderScience(root, ctx) {
 
   root.innerHTML = `
     ${pageHead(t('science.kicker'), t('science.title'), t('science.lede'))}
-    <section class="container section">
+    <div class="container science-layout">
+    <div class="science-main">
+    <section class="section">
       <p class="data-note" style="border:0;margin:0 0 var(--s-3)">
         ${esc(fmtDate(state.dateMs))} · ${fmtNum(state.stayDays, 0)} ${esc(t('ui.days'))} · ${esc(t('science.table.lede'))}
       </p>
@@ -415,14 +503,7 @@ export function renderScience(root, ctx) {
       <p class="data-note">${esc(t('science.precision.pass'))}</p>
     </section>
 
-    ${globeFigure({
-    id: 'science-globe',
-    title: t('globe.science.title'),
-    note: t('globe.science.note'),
-    extra: `<p class="globe-readout mono" id="science-subsolar">—</p>`,
-  })}
-
-    <section class="container section">
+    <section class="section">
       <div class="link-row">
         <a href="#/help">${esc(t('science.openMethod'))}</a>
         <a href="data/sites.json">${esc(t('science.data.sites'))}</a>
@@ -430,7 +511,19 @@ export function renderScience(root, ctx) {
         <a href="data/sources.json">${esc(t('science.data.sources'))}</a>
         <span class="mono small" style="color:var(--muted)">${esc(t('science.api.status'))} : <span id="api-status">…</span></span>
       </div>
-    </section>`;
+    </section>
+    </div>
+
+    <aside class="science-aside">
+      <div class="science-globe-card">
+        <div class="globe-circle" id="science-globe" role="img" aria-label="${esc(t('globe.science.title'))}"></div>
+        <h2>${esc(t('globe.science.title'))}</h2>
+        <p>${esc(t('globe.science.note'))}</p>
+        <p class="globe-readout mono" id="science-subsolar">—</p>
+        ${viewButtons()}
+      </div>
+    </aside>
+    </div>`;
 
   probeBackend().then((status) => {
     const el = root.querySelector('#api-status');

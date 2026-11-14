@@ -188,3 +188,116 @@
     page-break-inside: avoid;
   }
 }
+
+/* ============================================================
+   Print, second pass: the page must leave as a document, not as a
+   screenshot of the site. Nothing that only works on screen survives.
+   ============================================================ */
+
+@media print {
+  /* surface.css sets its palette on <body>, which wins over :root above. */
+  html,
+  body {
+    background: #fff !important;
+    color: #111 !important;
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #ffffff;
+    --surface-3: #ffffff;
+    --ink: #111111;
+    --ink-2: #222222;
+    --muted: #444444;
+    --line: #bbbbbb;
+    --line-strong: #888888;
+    --shadow: none;
+    --sun-soft: #f2f2f2;
+    --earth-soft: #eeeeee;
+    --ok-soft: #f2f2f2;
+    --ko-soft: #f2f2f2;
+  }
+
+  /* Chrome of the site: never printed. */
+  .dock,
+  .map-rail,
+  .map-globe-col,
+  .map-hero-bar,
+  .globe-host,
+  .globe-figure,
+  .globe-circle,
+  .stage,
+  .site-footer,
+  .loader,
+  #loader,
+  .map-layout > .map-globe-col,
+  .map-panels ~ .map-globe-col,
+  .segmented,
+  .chip,
+  .subnav,
+  .skip-link {
+    display: none !important;
+  }
+
+  main .section,
+  main .panel,
+  .map-panel,
+  .stat {
+    background: #fff !important;
+    border: 1px solid #999 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 5mm !important;
+    margin-block: 3mm !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  body {
+    background-image: none !important;
+  }
+
+  /* Headings and rules for a document, not a screen. */
+  main h1 {
+    font-size: 19pt;
+    margin: 0 0 2mm;
+  }
+
+  main h2 {
+    font-size: 12pt;
+    border-bottom: 1px solid #999;
+    padding-bottom: 1mm;
+  }
+
+  .page-head,
+  .kicker,
+  .page-meta,
+  .back-link {
+    color: #222 !important;
+  }
+
+  .mono,
+  .stat-value,
+  .probe-out dd,
+  .data-table td {
+    color: #111 !important;
+  }
+
+  /* Long tables break between rows, never inside one. */
+  .data-table tr,
+  .stat,
+  .panel {
+    break-inside: avoid;
+  }
+
+  .data-table thead {
+    display: table-header-group;
+  }
+
+  /* A print header with the document identity. */
+  .print-only {
+    display: block !important;
+  }
+}
+
+.print-only {
+  display: none;
+}

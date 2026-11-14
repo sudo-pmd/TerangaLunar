@@ -1,5 +1,5 @@
 {
-  "consulted": "2026-11-13",
+  "consulted": "2026-11-14",
   "sources": [
     {
       "id": "naif_de440s",
@@ -8,7 +8,7 @@
       "version": "de440s.bsp",
       "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/",
       "license": "NASA/JPL, domaine public",
-      "consulted": "2026-11-13"
+      "consulted": "2026-11-14"
     },
     {
       "id": "naif_moon_pa",
@@ -17,7 +17,7 @@
       "version": "moon_pa_de440_250416.bpc",
       "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/",
       "license": "NASA/JPL, domaine public",
-      "consulted": "2026-11-13"
+      "consulted": "2026-11-14"
     },
     {
       "id": "naif_moon_fk",
@@ -26,7 +26,7 @@
       "version": "moon_de440_250416.tf",
       "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/fk/satellites/",
       "license": "NASA/JPL, domaine public",
-      "consulted": "2026-11-13"
+      "consulted": "2026-11-14"
     },
     {
       "id": "naif_pck00011",
@@ -35,7 +35,7 @@
       "version": "pck00011.tpc",
       "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/",
       "license": "NASA/JPL, domaine public",
-      "consulted": "2026-11-13"
+      "consulted": "2026-11-14"
     },
     {
       "id": "naif_lsk",
@@ -44,7 +44,7 @@
       "version": "naif0012.tls",
       "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/lsk/",
       "license": "NASA/JPL, domaine public",
-      "consulted": "2026-11-13"
+      "consulted": "2026-11-14"
     },
     {
       "id": "lola_ldem",
@@ -53,7 +53,7 @@
       "version": "LDEM_80S (80 m/pixel)",
       "url": "https://pds-geosciences.wustl.edu/missions/lro/lola.htm",
       "license": "NASA/PDS, domaine public",
-      "consulted": "2026-11-13"
+      "consulted": "2026-11-14"
     },
     {
       "id": "nasa_clps",
@@ -62,7 +62,7 @@
       "version": "consulted 2026-11",
       "url": "https://www.nasa.gov/commercial-lunar-payload-services/",
       "license": "NASA, domaine public",
-      "consulted": "2026-11-13"
+      "consulted": "2026-11-14"
     },
     {
       "id": "moon_svs",
@@ -71,7 +71,7 @@
       "version": "2023 edition",
       "url": "https://svs.gsfc.nasa.gov/4720",
       "license": "NASA/Goddard, domaine public",
-      "consulted": "2026-11-13"
+      "consulted": "2026-11-14"
     },
     {
       "id": "earth_blue_marble",
@@ -80,7 +80,7 @@
       "version": "Blue Marble Next Generation",
       "url": "https://visibleearth.nasa.gov/collection/1484/blue-marble",
       "license": "NASA, domaine public",
-      "consulted": "2026-11-13"
+      "consulted": "2026-11-14"
     },
     {
       "id": "meeus",
@@ -89,7 +89,7 @@
       "version": "ISBN 0-943396-61-1",
       "url": "https://www.willbell.com/math/mc1.htm",
       "license": "Reference work, cited only",
-      "consulted": "2026-11-13"
+      "consulted": "2026-11-14"
     }
   ]
 }

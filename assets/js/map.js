@@ -51,17 +51,10 @@ export function renderMap(root, ctx) {
   let probe = state.probe ? { ...state.probe } : null;
 
   root.innerHTML = `
-    <section class="map-hero">
+    <section class="container map-layout">
       <h1 class="sr-only">${esc(t('map.title'))}</h1>
-      <div class="globe-host map-globe" id="globe-host" role="img"
-        aria-label="${esc(t('map.lede'))}"></div>
-      <div class="map-hero-bar">
-        <p class="hud-time mono" id="live-clock">—</p>
-        <p class="map-hero-hint">${esc(t('map.heroHint'))}</p>
-      </div>
-    </section>
 
-    <section class="container map-body">
+      <div class="map-main">
       <nav class="map-rail" aria-label="${esc(t('map.rail'))}">
         ${RAIL.map(([id, key], i) => `<button type="button" data-panel="${id}" aria-pressed="${i === 0}">
           <span class="rail-n" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span>
@@ -157,6 +150,16 @@ export function renderMap(root, ctx) {
           <div class="globe-host globe-host-south" id="south-host"></div>
         </div>
       </div>
+      </div>
+
+      <aside class="map-globe-col">
+        <div class="globe-host map-globe" id="globe-host" role="img"
+          aria-label="${esc(t('map.lede'))}"></div>
+        <div class="map-hero-bar">
+          <p class="hud-time mono" id="live-clock">—</p>
+          <p class="map-hero-hint">${esc(t('map.heroHint'))}</p>
+        </div>
+      </aside>
     </section>`;
 
   const clockEl = root.querySelector('#live-clock');
@@ -290,6 +293,10 @@ export function renderMap(root, ctx) {
       <div class="probe-state" data-lit="${lit}">
         <span class="chip-dot" aria-hidden="true"></span>
         ${esc(lit ? t('map.probe.lit') : t('map.probe.shadow'))}
+      </div>
+      <div class="probe-actions">
+        <button type="button" class="btn primary" data-study>${esc(t('map.probe.study'))}</button>
+        <button type="button" class="btn quiet" data-print-study>${esc(t('map.probe.print'))}</button>
       </div>`;
   };
 
@@ -397,6 +404,13 @@ export function renderMap(root, ctx) {
     setProbe({ lat, lon });
   });
   root.querySelector('#probe-clear').addEventListener('click', () => setProbe(null));
+
+  // The readout is repainted on every tick, so the two study buttons are wired
+  // by delegation instead of being rebound each time.
+  probeOut.addEventListener('click', (event) => {
+    if (event.target.closest('[data-study]')) actions.openStudy();
+    else if (event.target.closest('[data-print-study]')) actions.openStudy({ print: true });
+  });
 
   /* ---------------------------------------------------------------- scenes */
 
