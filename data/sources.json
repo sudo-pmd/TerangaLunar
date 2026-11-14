@@ -1,0 +1,95 @@
+{
+  "consulted": "2026-11-13",
+  "sources": [
+    {
+      "id": "naif_de440s",
+      "title": "JPL NAIF DE440s planetary ephemeris",
+      "titleFr": "Éphéméride planétaire JPL NAIF DE440s",
+      "version": "de440s.bsp",
+      "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/",
+      "license": "NASA/JPL, domaine public",
+      "consulted": "2026-11-13"
+    },
+    {
+      "id": "naif_moon_pa",
+      "title": "Lunar orientation kernel (high precision)",
+      "titleFr": "Noyau d'orientation lunaire (haute précision)",
+      "version": "moon_pa_de440_250416.bpc",
+      "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/",
+      "license": "NASA/JPL, domaine public",
+      "consulted": "2026-11-13"
+    },
+    {
+      "id": "naif_moon_fk",
+      "title": "Lunar frames kernel (MOON_ME and related frames)",
+      "titleFr": "Noyau de repères lunaires (MOON_ME et repères associés)",
+      "version": "moon_de440_250416.tf",
+      "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/fk/satellites/",
+      "license": "NASA/JPL, domaine public",
+      "consulted": "2026-11-13"
+    },
+    {
+      "id": "naif_pck00011",
+      "title": "Generic planetary constants kernel",
+      "titleFr": "Noyau générique des constantes planétaires",
+      "version": "pck00011.tpc",
+      "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/",
+      "license": "NASA/JPL, domaine public",
+      "consulted": "2026-11-13"
+    },
+    {
+      "id": "naif_lsk",
+      "title": "Leapseconds kernel",
+      "titleFr": "Noyau des secondes intercalaires",
+      "version": "naif0012.tls",
+      "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/lsk/",
+      "license": "NASA/JPL, domaine public",
+      "consulted": "2026-11-13"
+    },
+    {
+      "id": "lola_ldem",
+      "title": "LRO LOLA south polar digital elevation model",
+      "titleFr": "Modèle numérique de terrain LRO LOLA du pôle Sud",
+      "version": "LDEM_80S (80 m/pixel)",
+      "url": "https://pds-geosciences.wustl.edu/missions/lro/lola.htm",
+      "license": "NASA/PDS, domaine public",
+      "consulted": "2026-11-13"
+    },
+    {
+      "id": "nasa_clps",
+      "title": "NASA Commercial Lunar Payload Services delivery pages",
+      "titleFr": "Pages des livraisons Commercial Lunar Payload Services de la NASA",
+      "version": "consulted 2026-11",
+      "url": "https://www.nasa.gov/commercial-lunar-payload-services/",
+      "license": "NASA, domaine public",
+      "consulted": "2026-11-13"
+    },
+    {
+      "id": "moon_svs",
+      "title": "NASA SVS CGI Moon Kit (albedo and displacement)",
+      "titleFr": "CGI Moon Kit du NASA SVS (albédo et relief)",
+      "version": "2023 edition",
+      "url": "https://svs.gsfc.nasa.gov/4720",
+      "license": "NASA/Goddard, domaine public",
+      "consulted": "2026-11-13"
+    },
+    {
+      "id": "earth_blue_marble",
+      "title": "NASA Blue Marble Earth imagery",
+      "titleFr": "Imagerie terrestre Blue Marble de la NASA",
+      "version": "Blue Marble Next Generation",
+      "url": "https://visibleearth.nasa.gov/collection/1484/blue-marble",
+      "license": "NASA, domaine public",
+      "consulted": "2026-11-13"
+    },
+    {
+      "id": "meeus",
+      "title": "Meeus, Astronomical Algorithms (2nd ed.): lunar and solar series",
+      "titleFr": "Meeus, Astronomical Algorithms (2e éd.) : séries lunaire et solaire",
+      "version": "ISBN 0-943396-61-1",
+      "url": "https://www.willbell.com/math/mc1.htm",
+      "license": "Reference work, cited only",
+      "consulted": "2026-11-13"
+    }
+  ]
+}

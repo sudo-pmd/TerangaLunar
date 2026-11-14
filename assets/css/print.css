@@ -1,0 +1,190 @@
+/* ============================================================
+   Print: one readable summary per page, no navigation, no colour-only cues
+   ============================================================ */
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 15mm;
+  }
+
+  :root {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --ink: #000000;
+    --ink-2: #111111;
+    --muted: #333333;
+    --line: #bbbbbb;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+    font-size: 10.5pt;
+    line-height: 1.4;
+  }
+
+  .topbar,
+  .site-footer,
+  .skip-link,
+  .hero-scene,
+  .controls,
+  .timeline-tools,
+  .panel-actions,
+  .copy-status,
+  .back-link,
+  .btn,
+  .scene-hint,
+  .scene-tip,
+  .filters,
+  .checkbox-grid {
+    display: none !important;
+  }
+
+  .hero {
+    display: block;
+    min-height: 0;
+    background: #fff;
+    color: #000;
+    padding: 0 0 8mm;
+    border-bottom: 2px solid #000;
+  }
+
+  .hero h1,
+  .hero .lede,
+  .kicker {
+    color: #000;
+  }
+
+  .container {
+    max-width: none;
+    padding-inline: 0;
+  }
+
+  .panel,
+  .stat,
+  .assumptions {
+    border: 1px solid #999;
+    box-shadow: none;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    padding: 4mm;
+    margin-block: 3mm;
+    background: #fff;
+  }
+
+  .panel-dark {
+    color: #000;
+    background: #fff;
+    border-color: #999;
+  }
+
+  .panel-dark h2,
+  .panel-dark .panel-head p,
+  .panel-dark .legend,
+  .panel-dark .readout {
+    color: #000;
+  }
+
+  .stat {
+    border-top: 2px solid #000;
+  }
+
+  .metrics {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3mm;
+  }
+
+  /* Charts keep their geometry but switch to greyscale-safe strokes. */
+  .chart {
+    max-width: 100%;
+    break-inside: avoid;
+  }
+
+  .terrain {
+    fill: #d4d4d4;
+    stroke: #000;
+  }
+
+  .band-sun {
+    fill: #ffffff;
+    stroke: #000;
+    stroke-width: 1;
+  }
+
+  .band-earth {
+    fill: #cccccc;
+    stroke: #000;
+        stroke-width: 1;
+  }
+
+  .band-shadow {
+    fill: url(#hatch);
+  }
+
+  .hatch-line {
+    stroke: #000;
+  }
+
+  .data-table {
+    min-width: 0;
+    font-size: 9pt;
+  }
+
+  .data-table th,
+  .data-table td {
+    border-bottom: 1px solid #999;
+    padding: 2mm;
+  }
+
+  .verdict {
+    border: 1px solid #000;
+    color: #000;
+    background: #fff;
+  }
+
+  #notes {
+    border: 1px solid #999;
+    min-height: 45mm;
+    padding: 3mm;
+    font-size: 10pt;
+  }
+
+  .gloss summary {
+    display: none;
+  }
+
+  .gloss-body {
+    display: none;
+  }
+
+  .table-scroll {
+    overflow: visible;
+    margin: 0;
+    padding: 0;
+  }
+
+  a {
+    color: #000;
+    text-decoration: underline;
+  }
+
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 8pt;
+    word-break: break-all;
+  }
+
+  h1 {
+    font-size: 20pt;
+  }
+
+  h2 {
+    font-size: 13pt;
+  }
+
+  .assumptions,
+  .panel {
+    page-break-inside: avoid;
+  }
+}

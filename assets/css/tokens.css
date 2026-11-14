@@ -1,0 +1,221 @@
+/* ============================================================
+   Design tokens and base elements
+   Editorial aerospace palette: obsidian canvas for the sky views,
+   alabaster surfaces for reading, amber for the Sun, azure for Earth.
+   ============================================================ */
+
+:root {
+  /* Surfaces */
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #eef1f5;
+  --surface-3: #e4e9f0;
+  --ink: #111827;
+  --ink-2: #374151;
+  --muted: #5b6577;
+  --line: #e2e8f0;
+  --line-strong: #cbd5e1;
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+
+  /* Space canvas */
+  --space-bg: #080b14;
+  --space-surface: #0b1020;
+  --space-line: #25304a;
+  --space-ink: #e8edf7;
+  --space-muted: #93a0b8;
+
+  /* Data colours */
+  --sun: #f59e0b;
+  --sun-ink: #a4530b;
+  --sun-soft: #fdf0d5;
+  --earth: #2563eb;
+  --earth-soft: #dbe7fe;
+  --terrain: #64748b;
+  --ok: #15803d;
+  --ok-soft: #e7f5ec;
+  --ko: #b42318;
+  --ko-soft: #fdecea;
+
+  /* Type */
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* Spacing */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 4px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.55;
+  font-feature-settings: "kern" 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0 0 var(--s-3);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  font-weight: 600;
+}
+
+h1 {
+  font-size: clamp(1.85rem, 1.2rem + 2.2vw, 2.9rem);
+}
+
+h2 {
+  font-size: clamp(1.25rem, 1.05rem + 0.7vw, 1.6rem);
+}
+
+h3 {
+  font-size: 1.0625rem;
+}
+
+p {
+  margin: 0 0 var(--s-4);
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+
+a {
+  color: var(--earth);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+a:hover {
+  color: #1d4ed8;
+}
+
+img,
+svg,
+canvas {
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+/* Numbers line up everywhere. */
+.mono {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  letter-spacing: 0.01em;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.small {
+  font-size: 0.8125rem;
+}
+
+.strong {
+  font-weight: 600;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+:focus-visible {
+  outline: 3px solid var(--earth);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+.panel-dark :focus-visible,
+.hero :focus-visible {
+  outline-color: var(--sun);
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--s-4);
+  top: -40px;
+  z-index: 100;
+  background: var(--ink);
+  color: #fff;
+  padding: var(--s-2) var(--s-4);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+  top: var(--s-4);
+  color: #fff;
+}
+
+.boot {
+  padding: var(--s-7);
+  color: var(--muted);
+  text-align: center;
+}
+
+.boot-error {
+  max-width: 40rem;
+  margin: var(--s-8) auto;
+  padding: var(--s-6);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

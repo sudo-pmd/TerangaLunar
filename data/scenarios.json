@@ -1,0 +1,78 @@
+{
+  "scenarios": [
+    {
+      "id": "cycle",
+      "titleKey": "discover.s1.title",
+      "paragraphs": {
+        "fr": [
+          "Sur la Lune, le Soleil ne se lève pas toutes les 24 heures. La Lune tourne sur elle-même en 29,5 jours, donc le Soleil met presque un mois à revenir au même endroit du ciel.",
+          "À l’équateur, cela donne environ deux semaines de jour continu, puis deux semaines de nuit noire. Un atterrisseur doit survivre à cette longue nuit, avec des températures très basses.",
+          "Les instruments qui ont besoin de lumière travaillent pendant le jour lunaire. Ceux qui étudient la nuit attendent leur tour."
+        ],
+        "en": [
+          "On the Moon the Sun does not rise every 24 hours. The Moon spins once in 29.5 days, so the Sun takes almost a month to return to the same place in the sky.",
+          "At the equator that means about two weeks of continuous daylight, then two weeks of black night. A lander has to survive that long night, at very low temperatures.",
+          "Instruments that need light work during the lunar day. Those that study the night wait their turn."
+        ]
+      },
+      "questions": [
+        {
+          "q": { "fr": "Combien de temps dure une nuit à l’équateur lunaire ?", "en": "How long does a night last at the lunar equator?" },
+          "a": { "fr": "Environ 14,8 jours : la moitié d’un cycle lunaire de 29,5 jours.", "en": "About 14.8 days: half of a 29.5-day lunar cycle." }
+        },
+        {
+          "q": { "fr": "Pourquoi la Lune montre-t-elle toujours la même face à la Terre ?", "en": "Why does the Moon always show the same face to Earth?" },
+          "a": { "fr": "Sa rotation dure exactement le temps d’une orbite : elle tourne une fois pendant qu’elle fait le tour de la Terre.", "en": "It rotates in exactly one orbital period: one turn per orbit around Earth." }
+        }
+      ]
+    },
+    {
+      "id": "pole",
+      "titleKey": "discover.s2.title",
+      "paragraphs": {
+        "fr": [
+          "Au pôle Sud, le Soleil ne monte jamais haut. Il reste au ras de l’horizon et fait le tour du ciel en un mois, en restant à moins de deux degrés au-dessus ou au-dessous de l’horizon.",
+          "Alors le Soleil ne se couche pas vraiment : il frôle les cratères. Sur une crête un peu haute, la lumière revient presque chaque jour, même au cœur de l’hiver lunaire.",
+          "La Terre aussi reste très basse, à quelques degrés de l’horizon, mais presque toujours visible. C’est pratique pour envoyer des données vers la Terre."
+        ],
+        "en": [
+          "At the south pole the Sun never climbs high. It stays near the horizon and circles the sky once a month, never more than about two degrees above or below it.",
+          "So the Sun does not really set: it grazes the crater rims. On a ridge that is a little higher than its surroundings, light returns almost every day, even in lunar midwinter.",
+          "Earth also stays very low, a few degrees above the horizon, but almost always in view. That is useful for sending data home."
+        ]
+      },
+      "questions": [
+        {
+          "q": { "fr": "Pourquoi une crête éclairée presque en permanence est-elle intéressante ?", "en": "Why is a ridge that is almost always lit interesting?" },
+          "a": { "fr": "Parce qu’elle permet de produire de l’électricité avec des panneaux solaires sans subir une nuit de deux semaines.", "en": "Because solar panels can keep making power without a two-week night." }
+        },
+        {
+          "q": { "fr": "Une crête très éclairée est-elle forcément un bon site ?", "en": "Is a very bright ridge automatically a good site?" },
+          "a": { "fr": "Non : il faut aussi une pente douce, un sol stable et une liaison Terre fiable.", "en": "No: it also needs a gentle slope, stable ground and a reliable Earth link." }
+        }
+      ]
+    },
+    {
+      "id": "delay",
+      "titleKey": "discover.s3.title",
+      "paragraphs": {
+        "fr": [
+          "Un lancement est souvent décalé de quelques jours, parfois de plusieurs semaines. Or la lumière ne se répète pas exactement chaque mois : le relief cache le Soleil à des heures différentes.",
+          "Décaler la date de dix jours peut transformer un séjour bien éclairé en séjour avec une longue nuit. Il faut donc recalculer, et pas seulement décaler.",
+          "C’est ce que font les boutons −7 et +7 jours : la part ensoleillée, la nuit la plus longue et la note sont recalculées à chaque clic."
+        ],
+        "en": [
+          "A launch often slips by a few days, sometimes by weeks. But the light does not repeat exactly every month: the terrain hides the Sun at different times.",
+          "Shifting the date by ten days can turn a well-lit stay into one with a long night. So you recalculate rather than just shifting.",
+          "That is what the −7 and +7 day buttons do: sunlit share, longest night and score are recomputed on every click."
+        ]
+      },
+      "questions": [
+        {
+          "q": { "fr": "Pourquoi deux dates séparées d’un mois ne donnent-elles pas les mêmes chiffres ?", "en": "Why do two dates a month apart not give the same figures?" },
+          "a": { "fr": "Parce que le cycle lunaire dure 29,5 jours et que l’orbite est elliptique : la lumière ne se répète pas à l’identique.", "en": "Because the lunar cycle is 29.5 days and the orbit is elliptical: the lighting never repeats exactly." }
+        }
+      ]
+    }
+  ]
+}

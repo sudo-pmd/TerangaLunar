@@ -1,0 +1,76 @@
+{
+  "terms": [
+    {
+      "id": "azimut",
+      "term": { "fr": "Azimut", "en": "Azimuth" },
+      "def": {
+        "fr": "Direction d’un astre mesurée depuis le Nord, dans le sens horaire : 90° = Est, 180° = Sud.",
+        "en": "Direction of a body measured from North, clockwise: 90° = East, 180° = South."
+      }
+    },
+    {
+      "id": "elevation",
+      "term": { "fr": "Élévation", "en": "Elevation" },
+      "def": {
+        "fr": "Hauteur d’un astre au-dessus de l’horizon, en degrés. 0° = horizon, 90° = zénith.",
+        "en": "Height of a body above the horizon, in degrees. 0° = horizon, 90° = zenith."
+      }
+    },
+    {
+      "id": "masque",
+      "term": { "fr": "Masque d’horizon", "en": "Horizon mask" },
+      "def": {
+        "fr": "Silhouette du relief autour du site, direction par direction. Un astre plus bas que le masque est caché.",
+        "en": "The terrain silhouette around the site, direction by direction. A body below the mask is hidden."
+      }
+    },
+    {
+      "id": "libration",
+      "term": { "fr": "Libration", "en": "Libration" },
+      "def": {
+        "fr": "Léger balancement apparent de la Lune, qui laisse voir jusqu’à 59 % de sa surface depuis la Terre.",
+        "en": "A slight apparent rocking of the Moon that reveals up to 59% of its surface from Earth."
+      }
+    },
+    {
+      "id": "nuit",
+      "term": { "fr": "Nuit lunaire", "en": "Lunar night" },
+      "def": {
+        "fr": "Période où le Soleil reste sous l’horizon. Elle dure environ 14,8 jours à l’équateur, bien moins sur une crête polaire.",
+        "en": "A period with the Sun below the horizon. It lasts about 14.8 days at the equator, far less on a polar ridge."
+      }
+    },
+    {
+      "id": "sejour",
+      "term": { "fr": "Séjour", "en": "Stay" },
+      "def": {
+        "fr": "Durée pendant laquelle on évalue les conditions, à partir de la date d’atterrissage.",
+        "en": "The period over which conditions are evaluated, starting at the landing date."
+      }
+    },
+    {
+      "id": "fenetre",
+      "term": { "fr": "Fenêtre Terre", "en": "Earth window" },
+      "def": {
+        "fr": "Intervalle pendant lequel la Terre est au-dessus du relief : on peut alors communiquer.",
+        "en": "An interval with Earth above the terrain, which is when communication is possible."
+      }
+    },
+    {
+      "id": "ldem",
+      "term": { "fr": "LDEM 80S", "en": "LDEM 80S" },
+      "def": {
+        "fr": "Modèle de relief du pôle Sud lunaire produit par l’altimètre LOLA, à 80 m par pixel.",
+        "en": "Lunar south polar elevation model from the LOLA altimeter, at 80 m per pixel."
+      }
+    },
+    {
+      "id": "ephemeride",
+      "term": { "fr": "Éphéméride", "en": "Ephemeris" },
+      "def": {
+        "fr": "Table ou formule qui donne la position d’un astre à un instant donné.",
+        "en": "A table or formula giving the position of a body at a given instant."
+      }
+    }
+  ]
+}
