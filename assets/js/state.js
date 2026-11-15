@@ -6,10 +6,16 @@
  *   #/map?lat=-84.5&lon=12.3
  */
 
+/** Today at noon UTC: the sheet opens on the reader's own day, not a fixture. */
+function todayNoonUtc() {
+  const now = new Date();
+  return Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
+}
+
 export const DEFAULT_STATE = {
   route: 'home',
   siteId: null,
-  dateMs: Date.UTC(2026, 2, 1, 12, 0, 0),
+  dateMs: todayNoonUtc(),
   stayDays: 14,
   profile: 'eng',
   weights: { energy: 60, comm: 40 },
@@ -18,6 +24,8 @@ export const DEFAULT_STATE = {
   seuils: null,
   /** Free study point on the map: {lat, lon} or null. */
   probe: null,
+  /** Optional name the reader gives that point, printed on the sheet. */
+  probeName: '',
 };
 
 const ROUTES = new Set([
@@ -78,6 +86,8 @@ export function parseHash(hash) {
     if (Number.isFinite(lat) && Number.isFinite(lon)
       && Math.abs(lat) <= 90 && Math.abs(lon) <= 360) {
       state.probe = { lat, lon: ((lon % 360) + 360) % 360 };
+      const nm = (params.get('nm') || '').trim();
+      if (nm) state.probeName = nm.slice(0, 60);
     }
   }
 
@@ -105,6 +115,7 @@ export function buildHash(state) {
   if ((state.route === 'map' || state.route === 'study') && state.probe) {
     params.set('lat', state.probe.lat.toFixed(4));
     params.set('lon', state.probe.lon.toFixed(4));
+    if (state.probeName) params.set('nm', state.probeName);
   }
   if (state.seuils) {
     params.set(

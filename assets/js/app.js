@@ -113,8 +113,14 @@ const actions = {
     app.state.route = 'study';
     navigate();
   },
+  setProbeName(name) {
+    app.state.probeName = String(name || '').slice(0, 60);
+    const hash = buildHash(app.state);
+    if (window.location.hash !== hash) window.history.replaceState(null, '', hash);
+  },
   setProbe(probe, { silent = true } = {}) {
     app.state.probe = probe;
+    if (!probe) app.state.probeName = '';
     const hash = buildHash(app.state);
     if (window.location.hash === hash) return;
     if (silent) window.history.replaceState(null, '', hash);

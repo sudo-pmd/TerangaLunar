@@ -16,6 +16,7 @@ import { mountMoon } from './moon3d.js';
 import { toUtcInput, fromUtcInput } from './state.js';
 import { horizonProfile, isMeasured } from './horizon.js';
 import { ensurePrecomputed } from './precomputed.js';
+import { drawPointDisc } from './pointimage.js';
 
 const YEAR_SAMPLES = 366 * 24 + 1;
 
@@ -88,11 +89,34 @@ export function renderHome(root, ctx) {
           alt="TerangaLunar — Space &amp; Lunar Missions" width="300" height="72" decoding="async">
       </div>
       <p class="stage-hint mono">${esc(t('home.scene.hint'))}</p>
+      <div class="stage-scale" id="hero-scale" title="${esc(t('home.scale.zoom'))}">
+        <span class="scale-value mono" id="scale-value">—</span>
+        <span class="scale-bar" id="scale-bar" style="width:96px"></span>
+        <span class="scale-label">${esc(t('home.scale'))}</span>
+      </div>
     </section>`;
 
   let scene = null;
   let disposed = false;
   const sceneHost = root.querySelector('#hero-scene');
+  const scaleValue = root.querySelector('#scale-value');
+  const scaleBar = root.querySelector('#scale-bar');
+
+  // A real scale, not a decoration: kilometres per pixel at the sub-camera
+  // point, rounded to a length whose bar stays around a hundred pixels.
+  const STEPS_KM = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000];
+  const onScale = (kmPerPx) => {
+    if (!scaleValue || !scaleBar || !(kmPerPx > 0)) return;
+    let km = STEPS_KM[0];
+    for (const step of STEPS_KM) {
+      const px = step / kmPerPx;
+      if (px <= 120) km = step;
+      if (px > 120) break;
+    }
+    const px = Math.max(28, Math.min(150, Math.round(km / kmPerPx)));
+    scaleBar.style.width = `${px}px`;
+    scaleValue.textContent = `${fmtNum(km, 0)} km`;
+  };
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   mountMoon(sceneHost, {
@@ -103,6 +127,7 @@ export function renderHome(root, ctx) {
     reducedMotion,
     hint: '',
     onSelect: (id) => actions.openSite(id),
+    onScale,
   }).then((api) => {
     if (disposed) {
       api.dispose();
@@ -516,7 +541,51 @@ function thresholdTable(metrics, seuils) {
     </div>`;
 }
 
-function profilePanel({ geom, metrics, seuils, profile }) {
+/**
+ * Facts that only make sense over the stay window: extrema, how many times the
+ * Sun rose, the longest stretch with the Earth in view. They are what a planner
+ * actually asks for, and they were missing from both profiles.
+ */
+function stayFacts(series, i0, i1) {
+  const start = Math.max(0, i0);
+  const end = Math.min(series.count, i1);
+  let sunMin = Infinity;
+  let sunMax = -Infinity;
+  let earthMin = Infinity;
+  let earthMax = -Infinity;
+  let cycles = 0;
+  let longest = 0;
+  let run = 0;
+  for (let i = start; i < end; i += 1) {
+    const sAlt = series.sunAlt[i];
+    const eAlt = series.earthAlt[i];
+    if (sAlt < sunMin) sunMin = sAlt;
+    if (sAlt > sunMax) sunMax = sAlt;
+    if (eAlt < earthMin) earthMin = eAlt;
+    if (eAlt > earthMax) earthMax = eAlt;
+    if (series.sunVis[i] && series.sunVis[i - 1] !== 1) cycles += 1;
+    if (series.earthVis[i]) {
+      run += 1;
+      if (run > longest) longest = run;
+    } else {
+      run = 0;
+    }
+  }
+  const stepH = series.stepMs / HOUR_MS;
+  const finite = (v) => (Number.isFinite(v) ? v : 0);
+  return {
+    sunMin: finite(sunMin),
+    sunMax: finite(sunMax),
+    earthMin: finite(earthMin),
+    earthMax: finite(earthMax),
+    cycles,
+    longestWindowHours: longest * stepH,
+  };
+}
+
+function profilePanel({ geom, metrics, seuils, profile, series, i0, i1, site }) {
+  const facts = series ? stayFacts(series, i0, i1) : null;
+  const maskMax = site ? horizonProfile(site).max : null;
   const list = verdicts(metrics, seuils);
   // "all" is the sheet: everything the two specialised profiles show, in one
   // document, for a reader who wants the engineering numbers *and* the
@@ -534,12 +603,22 @@ function profilePanel({ geom, metrics, seuils, profile }) {
         <div><dt>${esc(t('profile.sci.shadow'))}</dt><dd class="mono">${fmtNum((geom.sun.az + 180) % 360, 0)}°</dd></div>
       </dl>
       <p class="panel-note">${esc(t('metric.sun.help'))}</p>
-      ${profile === 'all' ? `<div class="profile-split" aria-hidden="true"></div>${engineering({ metrics, seuils, list })}` : ''}`;
+      ${facts ? `<p class="kv-title">${esc(t('profile.f.title'))}</p>
+      <dl class="kv kv-facts">
+        <div><dt>${esc(t('profile.f.sunmin'))}</dt><dd class="mono">${fmtNum(facts.sunMin, 1)}°</dd></div>
+        <div><dt>${esc(t('profile.f.sunmax'))}</dt><dd class="mono">${fmtNum(facts.sunMax, 1)}°</dd></div>
+        <div><dt>${esc(t('profile.f.earthmax'))}</dt><dd class="mono">${fmtNum(facts.earthMax, 1)}°</dd></div>
+        <div><dt>${esc(t('profile.f.cycles'))}</dt><dd class="mono">${fmtNum(facts.cycles, 0)}</dd></div>
+        ${maskMax !== null ? `<div><dt>${esc(t('profile.f.horizon'))}</dt><dd class="mono">${fmtNum(maskMax, 1)}°</dd></div>` : ''}
+        <div><dt>${esc(t('profile.f.grazing'))}</dt><dd class="mono">${fmtNum(metrics.grazingHours ?? 0, 0)} ${esc(t('ui.hours'))}</dd></div>
+      </dl>
+      <p class="panel-note">${esc(t('profile.f.note'))}</p>` : ''}
+      ${profile === 'all' ? `<div class="profile-split" aria-hidden="true"></div>${engineering({ metrics, seuils, list, facts })}` : ''}`;
   }
-  return engineering({ metrics, seuils, list });
+  return engineering({ metrics, seuils, list, facts });
 }
 
-function engineering({ metrics, seuils, list }) {
+function engineering({ metrics, seuils, list, facts }) {
   const failures = list.filter((v) => !v.ok).length;
   return `<header class="panel-head">
       <h2>${esc(t('profile.eng.title'))}</h2>
@@ -549,6 +628,14 @@ function engineering({ metrics, seuils, list }) {
       <div><dt>${esc(t('profile.eng.night'))}</dt><dd class="mono">${fmtDuration(metrics.maxNightHours)}</dd></div>
       <div><dt>${esc(t('profile.eng.telecom'))}</dt><dd class="mono">${metrics.earthWindows.length} <span class="muted">${esc(t('metric.windows'))} · ${fmtPct(metrics.earthPct, 0)}</span></dd></div>
     </dl>
+    ${facts ? `<p class="kv-title">${esc(t('profile.f.title'))}</p>
+    <dl class="kv kv-facts">
+      <div><dt>${esc(t('profile.f.night'))}</dt><dd class="mono">${esc(fmtDuration(metrics.maxNightHours))}</dd></div>
+      <div><dt>${esc(t('profile.f.window'))}</dt><dd class="mono">${esc(fmtDuration(facts.longestWindowHours))}</dd></div>
+      <div><dt>${esc(t('profile.f.windows'))}</dt><dd class="mono">${fmtNum(metrics.earthWindows.length, 0)}</dd></div>
+      <div><dt>${esc(t('profile.f.cycles'))}</dt><dd class="mono">${fmtNum(facts.cycles, 0)}</dd></div>
+    </dl>
+    <p class="panel-note">${esc(t('profile.f.note'))}</p>` : ''}
     <p class="panel-note" data-state="${failures ? 'ko' : 'ok'}">${esc(failures ? t('thr.someKo', { n: failures }) : t('thr.allOk'))}</p>`;
 }
 
@@ -1063,8 +1150,16 @@ export function requestPrint(on = true) {
   printOnArrival = on;
 }
 
+const STUDY_OPTIONS = [
+  ['doc', 'study.opt.doc'],
+  ['disc', 'study.opt.disc'],
+  ['facts', 'study.opt.facts'],
+  ['charts', 'study.opt.charts'],
+  ['assume', 'study.opt.assume'],
+];
+
 export function renderStudy(root, ctx) {
-  const { config, state } = ctx;
+  const { config, state, actions } = ctx;
   const probe = state.probe;
 
   if (!probe) {
@@ -1096,24 +1191,53 @@ export function renderStudy(root, ctx) {
   const metrics = aggregate(series, i0, i1);
   const profile = horizonProfile(site);
   const geom = siteGeometry(site, series.startMs + idx * series.stepMs);
+  const facts = stayFacts(series, i0, i1);
+  const name = (state.probeName || '').trim();
+  const when = series.startMs + idx * series.stepMs;
 
   root.innerHTML = `
     <article class="study-sheet">
       <header class="container page-head study-head">
         <p class="kicker">${esc(t('study.kicker'))}</p>
-        <h1>${esc(`${fmtNum(site.lat, 2)}° / ${fmtNum(site.lon, 2)}°`)}</h1>
+        <h1 id="study-title">${esc(name || t('study.unnamed'))}</h1>
         <p class="page-meta">
-          <span class="mono">${esc(fmtDate(series.startMs + idx * series.stepMs))}</span>
+          <span class="mono">${esc(`${fmtNum(site.lat, 2)}° / ${fmtNum(site.lon, 2)}°`)}</span>
+          <span class="mono">${esc(fmtDate(when))}</span>
           <span>${fmtNum(state.stayDays, 0)} ${esc(t('ui.days'))}</span>
           <span class="muted">${esc(t('study.analytic'))}</span>
         </p>
+
+        <div class="study-name-row">
+          <label class="field">
+            <span>${esc(t('study.name'))}</span>
+            <input type="text" id="study-name" maxlength="60" autocomplete="off"
+              value="${esc(name)}" placeholder="${esc(t('study.name.ph'))}">
+          </label>
+        </div>
+
         <div class="book-actions">
           <button type="button" class="btn primary" id="study-print">${esc(t('study.print'))}</button>
-          <a class="btn quiet" href="#/map">${esc(t('study.back'))}</a>
+          <a class="btn quiet" href="#/map">${esc(t('study.place'))}</a>
         </div>
       </header>
 
       <section class="container section study-body">
+        <div class="study-options">
+          <h2>${esc(t('study.options'))}</h2>
+          <div class="opt-grid">
+            ${STUDY_OPTIONS.map(([key, label]) => `<label>
+              <input type="checkbox" data-opt="${key}" checked>
+              <span>${esc(t(label))}</span>
+            </label>`).join('')}
+          </div>
+          <p class="opt-hint">${esc(t('study.opt.hint'))}</p>
+        </div>
+
+        <figure class="study-disc">
+          <canvas id="study-disc" width="520" height="520"></canvas>
+          <figcaption>${esc(t('study.disc.caption'))}</figcaption>
+        </figure>
+
         <div class="science-grid">
           <article class="stat tone-sun">
             <h2 class="stat-label">${esc(t('metric.sun'))}</h2>
@@ -1138,6 +1262,13 @@ export function renderStudy(root, ctx) {
           <div><dt>${esc(t('map.subsolar'))}</dt><dd class="mono">${fmtNum(geom.subSolar.lat, 2)}° / ${fmtNum(geom.subSolar.lon, 2)}°</dd></div>
         </div>
 
+        <div class="study-facts">
+          <div><dt>${esc(t('profile.f.sunmin'))}</dt><dd class="mono">${fmtNum(facts.sunMin, 1)}°</dd></div>
+          <div><dt>${esc(t('profile.f.sunmax'))}</dt><dd class="mono">${fmtNum(facts.sunMax, 1)}°</dd></div>
+          <div><dt>${esc(t('profile.f.window'))}</dt><dd class="mono">${esc(fmtDuration(facts.longestWindowHours))}</dd></div>
+          <div><dt>${esc(t('profile.f.cycles'))}</dt><dd class="mono">${fmtNum(facts.cycles, 0)}</dd></div>
+        </div>
+
         <figure class="study-figure">
           <figcaption>${esc(t('learn.s1t'))}</figcaption>
           <div class="chart-host">${horizonSvg({ series, index: 12, profile })}</div>
@@ -1154,13 +1285,37 @@ export function renderStudy(root, ctx) {
       </section>
     </article>`;
 
-  const btn = root.querySelector('#study-print');
-  if (btn) btn.addEventListener('click', () => window.print());
+  const titleEl = root.querySelector('#study-title');
+  const nameInput = root.querySelector('#study-name');
+  nameInput.addEventListener('input', () => {
+    const value = nameInput.value.trim();
+    titleEl.textContent = value || t('study.unnamed');
+    actions.setProbeName?.(nameInput.value);
+  });
+
+  root.querySelectorAll('[data-opt]').forEach((box) => {
+    box.addEventListener('change', () => {
+      document.body.classList.toggle(`hide-study-${box.dataset.opt}`, !box.checked);
+    });
+  });
+
+  root.querySelector('#study-print').addEventListener('click', () => window.print());
+
+  // The printed sheet needs the disc, so printing waits for it instead of a
+  // fixed delay: a PDF without the photo was the usual result before.
+  const discDrawn = drawPointDisc(root.querySelector('#study-disc'), {
+    lat: site.lat,
+    lon: site.lon,
+    size: 520,
+    label: `${fmtNum(site.lat, 2)}° / ${fmtNum(site.lon, 2)}°`,
+  }).catch(() => {});
 
   if (printOnArrival) {
     printOnArrival = false;
-    setTimeout(() => window.print(), 700);
+    discDrawn.then(() => setTimeout(() => window.print(), 260));
   }
 
-  return null;
+  return () => {
+    for (const [key] of STUDY_OPTIONS) document.body.classList.remove(`hide-study-${key}`);
+  };
 }
