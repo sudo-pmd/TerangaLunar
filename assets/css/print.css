@@ -301,3 +301,112 @@
 .print-only {
   display: none;
 }
+
+/* ============================================================
+   Print, third pass: the study sheet leaves as a one-page document —
+   name, coordinates, the point on the disc, then the numbers.
+   ============================================================ */
+
+@media print {
+  .study-options,
+  .study-name-row,
+  .study-head .book-actions,
+  .stage-scale {
+    display: none !important;
+  }
+
+  .study-sheet {
+    padding: 0 !important;
+  }
+
+  .study-head {
+    border-bottom: 2px solid #000;
+    padding-bottom: 3mm;
+    margin-bottom: 4mm;
+  }
+
+  .study-head h1 {
+    font-size: 18pt;
+    margin: 0 0 1mm !important;
+  }
+
+  .study-head .page-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4mm;
+    font-size: 9.5pt;
+  }
+
+  .study-disc {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin: 0 auto 4mm;
+  }
+
+  .study-disc canvas {
+    width: 70mm !important;
+    height: 70mm !important;
+    box-shadow: none !important;
+    border: 1px solid #999 !important;
+  }
+
+  .study-disc figcaption {
+    font-size: 8.5pt;
+    color: #333;
+    margin-top: 1.5mm;
+  }
+
+  .study-facts {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2mm 6mm;
+    margin-block: 3mm;
+    border: 1px solid #999;
+    padding: 3mm;
+  }
+
+  .study-facts > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 3mm;
+    border: 0;
+    padding: 0;
+  }
+
+  .study-facts dt {
+    color: #333;
+    font-size: 9pt;
+  }
+
+  .study-facts dd {
+    color: #000;
+    font-size: 9pt;
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .study-figure {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-block: 3mm;
+  }
+
+  .science-grid,
+  .study-body .science-grid {
+    gap: 3mm;
+  }
+
+  .kv-facts > div {
+    border-bottom: 1px dotted #bbb;
+  }
+
+  .kv-facts dd,
+  .orbit-facts dd {
+    color: #000 !important;
+  }
+
+  main .seg,
+  main .segmented {
+    display: none !important;
+  }
+}

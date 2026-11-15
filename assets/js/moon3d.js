@@ -31,6 +31,8 @@ const MAP_PREVIEW = 'assets/img/low/moon.jpg';    // 2048 x 1024, first paint
 // Zoom level of detail: the 4K map is what everyone gets; the 8K export is
 // only fetched once the camera is close enough for the difference to be
 // visible, and it is never requested twice.
+const MOON_RADIUS_KM = 1737.4;
+
 const MAP_ZOOM = 'assets/img/moon-8k.jpg'; // optional-asset: 8K mikmap, loaded on zoom
 const RELIEF_IMAGES = [
   'assets/img/ldem_hi.jpg', // optional-asset: higher-resolution LOLA export, used when present
@@ -228,7 +230,7 @@ function createScene(THREE, OrbitControls, container, opts) {
   const {
     sites = [], onSelect, dateMs = Date.now(), reducedMotion = false,
     live = false, fit = false, view = 'globe', probe = null, onPick = null,
-    autoRotate = true, mini = false, lat, lon,
+    autoRotate = true, mini = false, lat, lon, onScale = null,
   } = opts;
 
   // Full-resolution MSAA on a 1200 px canvas is what gets the GPU process
@@ -575,6 +577,37 @@ function createScene(THREE, OrbitControls, container, opts) {
     container.dataset.cam = `${camera.position.toArray().map((v) => v.toFixed(2)).join(',')}|south`;
   };
 
+  /**
+   * Side-on framing: the terminator seen in profile, the way an orbit diagram
+   * draws it. Reused by the map's orbit panel instead of a second canvas, so
+   * the page keeps a single WebGL context.
+   */
+  const frameOrbit = () => {
+    const distance = Math.min(6.2, fitDistance() * 1.22);
+    // Almost in the ecliptic plane, a little above it: the lit and dark halves
+    // are both visible, and the poles stay recognisable.
+    camera.position.set(0.16, 0.22, 0.96).normalize().multiplyScalar(distance);
+    controls.target.set(0, 0, 0);
+    camera.up.set(0, 1, 0);
+    camera.lookAt(controls.target);
+    camera.updateProjectionMatrix();
+    controls.update();
+    userMoved = true;
+    container.dataset.cam = `${camera.position.toArray().map((v) => v.toFixed(2)).join(',')}|orbit`;
+    container.dataset.view = 'orbit';
+  };
+
+  // One reading at startup, so the scale bar is right before the first zoom.
+  if (onScale) {
+    setTimeout(() => {
+      const dist = camera.position.length();
+      const vFov = (camera.fov * Math.PI) / 180;
+      if (!disposed && container.clientHeight) {
+        onScale((2 * dist * Math.tan(vFov / 2) * MOON_RADIUS_KM) / container.clientHeight, dist);
+      }
+    }, 60);
+  }
+
   camera.position.set(0.42, 0.75, 0.99).normalize().multiplyScalar(4.4);
   camera.up.set(0, 1, 0);
   controls.target.set(0, 0, 0);
@@ -657,6 +690,16 @@ function createScene(THREE, OrbitControls, container, opts) {
   tip.className = 'scene-tip';
   tip.hidden = true;
   container.appendChild(tip);
+  if (onScale) {
+    // Orthographic disc: the whole 2R diameter spans 2R of the drawing, so the
+    // scale is the drawn radius against the real radius.
+    const report = () => {
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width) onScale((2 * MOON_RADIUS_KM) / (R * 2 * (rect.width / canvas.width)));
+    };
+    setTimeout(report, 80);
+  }
+
   const hintEl = document.createElement('p');
   hintEl.className = 'scene-hint';
   hintEl.textContent = opts.hint || '';
@@ -727,6 +770,7 @@ function createScene(THREE, OrbitControls, container, opts) {
 
   let raf = 0;
   let disposed = false;
+  let lastKmPerPx = 0;
 
   const tick = () => {
     if (disposed) return;
@@ -734,6 +778,18 @@ function createScene(THREE, OrbitControls, container, opts) {
 
     // Close enough that the base map starts to blur: fetch the next level.
     if (camera.position.length() < 2.05 && container.clientWidth > 480) upgradeOnZoom();
+
+    // Real scale under the point facing the camera: the same perspective maths
+    // the renderer uses, in kilometres per CSS pixel of the canvas.
+    if (onScale && !mini && container.clientHeight) {
+      const dist = camera.position.length();
+      const vFov = (camera.fov * Math.PI) / 180;
+      const kmPerPx = (2 * dist * Math.tan(vFov / 2) * MOON_RADIUS_KM) / container.clientHeight;
+      if (Math.abs(kmPerPx - lastKmPerPx) > lastKmPerPx * 0.005) {
+        lastKmPerPx = kmPerPx;
+        onScale(kmPerPx, dist);
+      }
+    }
 
     if (intro) {
       if (!intro.t0) intro.t0 = performance.now();
@@ -795,6 +851,7 @@ function createScene(THREE, OrbitControls, container, opts) {
     setView,
     framePole,
     frameGlobe,
+    frameOrbit,
     dispose() {
       disposed = true;
       cancelAnimationFrame(raf);
@@ -827,7 +884,7 @@ function createScene(THREE, OrbitControls, container, opts) {
 }
 
 /** No WebGL: an orthographic view from the south pole, still clickable. */
-function mountFallback(container, { sites = [], onSelect, hint }) {
+function mountFallback(container, { sites = [], onSelect, hint, onScale = null }) {
   const canvas = document.createElement('canvas');
   canvas.width = 720;
   canvas.height = 720;
@@ -864,6 +921,16 @@ function mountFallback(container, { sites = [], onSelect, hint }) {
     ctx.stroke();
   }
 
+  if (onScale) {
+    // Orthographic disc: the whole 2R diameter spans 2R of the drawing, so the
+    // scale is the drawn radius against the real radius.
+    const report = () => {
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width) onScale((2 * MOON_RADIUS_KM) / (R * 2 * (rect.width / canvas.width)));
+    };
+    setTimeout(report, 80);
+  }
+
   const hintEl = document.createElement('p');
   hintEl.className = 'scene-hint';
   hintEl.textContent = hint || '';
@@ -894,6 +961,7 @@ function mountFallback(container, { sites = [], onSelect, hint }) {
     setProbe() {},
     framePole() {},
     frameGlobe() {},
+    frameOrbit() {},
     dispose() {
       canvas.removeEventListener('click', onClick);
       canvas.remove();

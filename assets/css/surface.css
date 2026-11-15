@@ -1334,3 +1334,432 @@ main .seg svg {
   width: 100%;
   min-width: 160px;
 }
+
+/* ------------------------------------------- choice buttons, readable
+
+   The active segment used the --ink token, which surface.css redefines as a
+   near-white in this dark palette: the label vanished into its own background.
+   Selected now reads as gold-tinted light, never as a white block. */
+
+.seg.is-active,
+.seg[aria-checked='true'],
+.seg[aria-pressed='true'] {
+  background: rgba(246, 178, 60, 0.18) !important;
+  color: #ffe1a3 !important;
+  box-shadow: inset 0 0 0 1px rgba(246, 178, 60, 0.34);
+}
+
+.seg[aria-checked='true']:hover,
+.seg.is-active:hover {
+  background: rgba(246, 178, 60, 0.26) !important;
+  color: #fff0cf !important;
+}
+
+/* Every segmented row fills its row and shares the width evenly: three labels
+   of different lengths get three identical buttons. */
+main .segmented {
+  display: flex;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  gap: 2px;
+  padding: 2px;
+  background: rgba(8, 13, 23, 0.55);
+  border-radius: 12px;
+}
+
+main .segmented .seg {
+  flex: 1 1 0;
+  min-width: 0;
+  border-right: 0;
+  border-radius: 10px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The two buttons under the map probe share one rhythm. */
+.probe-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.probe-actions .btn {
+  flex: 1 1 140px;
+  text-align: center;
+  justify-content: center;
+}
+
+.panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.panel-actions .btn {
+  flex: 1 1 140px;
+  justify-content: center;
+}
+
+/* ------------------------------------------------ learn: the step menu
+
+   Below 900 px the two-column reading order collapses, and a sticky rail then
+   floats over the text it is supposed to introduce. The menu becomes a plain,
+   centred row of chips that scrolls sideways instead. */
+
+@media (max-width: 900px) {
+  .step-nav {
+    position: static !important;
+    top: auto !important;
+    z-index: auto !important;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding-block: 2px 8px;
+    margin-bottom: 10px;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .step-nav button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--line) !important;
+    border-left-width: 1px !important;
+    border-radius: 999px !important;
+    padding: 9px 14px !important;
+    font-size: 0.8125rem !important;
+    white-space: nowrap;
+    box-shadow: none !important;
+  }
+
+  .step-nav button[aria-current='step'] {
+    border-color: rgba(246, 178, 60, 0.55) !important;
+    background: rgba(246, 178, 60, 0.14) !important;
+    color: #ffe1a3 !important;
+    font-weight: 600;
+  }
+
+  .step-nav .step-num {
+    font-size: 0.6875rem;
+    opacity: 0.8;
+  }
+
+  .step-controls {
+    justify-content: center;
+  }
+
+  .step-controls .field {
+    flex: 1 1 140px;
+    max-width: 100%;
+  }
+}
+
+/* Choice rows inside a step are centred on every width. */
+.step-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+  margin-block: 14px;
+}
+
+.step-controls .field {
+  min-width: 0;
+  flex: 0 1 220px;
+}
+
+.step-controls .segmented {
+  flex: 1 1 200px;
+}
+
+/* ----------------------------------------------------- landing: scale bar */
+
+.stage-scale {
+  position: fixed;
+  right: clamp(76px, 9vw, 108px);
+  bottom: clamp(18px, 3vh, 30px);
+  z-index: 4;
+  display: grid;
+  gap: 3px;
+  justify-items: end;
+  pointer-events: none;
+  text-align: right;
+}
+
+.stage-scale .scale-bar {
+  height: 7px;
+  border: 1px solid rgba(230, 226, 216, 0.55);
+  border-top: 0;
+  background: linear-gradient(to right, rgba(230, 226, 216, 0.28), rgba(230, 226, 216, 0.05));
+}
+
+.stage-scale .scale-label {
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.62);
+}
+
+.stage-scale .scale-value {
+  font-size: 0.8125rem;
+  color: rgba(240, 244, 252, 0.92);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 720px) {
+  .stage-scale {
+    right: 74px;
+    bottom: 14px;
+  }
+
+  .stage-scale .scale-label {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------- study sheet: layout */
+
+.study-sheet {
+  padding-bottom: clamp(30px, 6vh, 70px);
+}
+
+.study-head {
+  display: grid;
+  gap: 8px;
+}
+
+.study-head .book-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.study-head .book-actions > * {
+  flex: 1 1 180px;
+  justify-content: center;
+  text-align: center;
+}
+
+.study-options {
+  display: grid;
+  gap: 12px;
+  margin-block: 4px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(12, 18, 30, 0.6);
+}
+
+.study-options h2 {
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8b98ad;
+  margin: 0;
+}
+
+.study-options .opt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 8px 16px;
+}
+
+.study-options label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: var(--ink-2);
+  min-height: 32px;
+}
+
+.study-options input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: #f6b23c;
+  flex: none;
+}
+
+.study-options .opt-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.study-name-row {
+  display: grid;
+  gap: 6px;
+  max-width: 420px;
+}
+
+.study-disc {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  gap: 10px;
+  margin-block: 8px 18px;
+}
+
+.study-disc canvas {
+  display: block;
+  width: min(320px, 74vw);
+  height: auto;
+  border-radius: 50%;
+  box-shadow: 0 30px 60px -40px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(148, 163, 184, 0.16);
+  background: #05080f;
+}
+
+.study-disc figcaption {
+  max-width: 46ch;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+/* Sections switched off in the options disappear from screen and paper. */
+body.hide-study-doc .study-head .page-meta,
+body.hide-study-doc .study-facts,
+body.hide-study-facts .study-facts,
+body.hide-study-charts .study-figure,
+body.hide-study-assume .assumptions,
+body.hide-study-disc .study-disc {
+  display: none !important;
+}
+
+/* ------------------------------------------- profiles and orbit readouts */
+
+.kv-title {
+  margin: 14px 0 6px;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8b98ad;
+}
+
+.kv-facts {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.kv-facts > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed rgba(148, 163, 184, 0.16);
+}
+
+.kv-facts > div:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.kv-facts dt {
+  color: var(--ink-2);
+  font-size: 0.875rem;
+}
+
+.kv-facts dd {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.orbit-facts {
+  display: grid;
+  gap: 8px;
+  margin: 4px 0 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(8, 13, 23, 0.5);
+}
+
+.orbit-facts > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.orbit-facts dt {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.orbit-facts dd {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: #fff;
+}
+
+@media (max-width: 720px) {
+  .stage-scale {
+    right: 72px;
+  }
+}
+
+/* The sheet header is centred as a block; its two fields and the action row are
+   centred with it instead of drifting left under a centred title. */
+.study-head {
+  justify-items: center;
+  text-align: center;
+}
+
+.study-head .study-name-row {
+  width: min(420px, 100%);
+  margin-inline: auto;
+  justify-items: stretch;
+  text-align: left;
+}
+
+.study-head .book-actions {
+  width: min(560px, 100%);
+  margin-inline: auto;
+}
+
+.study-head .book-actions > * {
+  flex: 1 1 200px;
+}
+
+@media (max-width: 720px) {
+  .study-head .book-actions > * {
+    flex: 1 1 100%;
+  }
+}
+
+/* On a phone the five steps are a 2-column stack, not a sideways scroller that
+   hides steps 4 and 5 behind an invisible edge. */
+@media (max-width: 900px) {
+  .step-nav {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible !important;
+    gap: 8px;
+    padding-bottom: 12px;
+  }
+
+  .step-nav button {
+    width: 100%;
+    justify-content: flex-start;
+    min-height: 44px;
+    line-height: 1.25;
+    white-space: normal;
+  }
+
+  .step-nav button:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
