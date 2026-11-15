@@ -40,7 +40,7 @@ const fr = {
   'home.hint': 'Cliquez un point sur la Lune ou une fiche pour ouvrir l’analyse.',
   'home.scene.alt': 'Lune interactive : les points marquent les sites d’atterrissage CLPS.',
   'home.scene.skip': 'Passer l’introduction',
-  'home.scene.hint': 'Glisser pour tourner · molette pour zoomer',
+  'home.scene.hint': 'Glisser · molette pour zoomer',
   'home.scene.fallback': 'Vue 3D indisponible : utilisez la liste des sites ci-dessous.',
 
   'status.landed': 'Posé',
@@ -289,7 +289,7 @@ const en = {
   'home.hint': 'Click a point on the Moon or a card to open the analysis.',
   'home.scene.alt': 'Interactive Moon: dots mark CLPS landing sites.',
   'home.scene.skip': 'Skip intro',
-  'home.scene.hint': 'Drag to rotate · scroll to zoom',
+  'home.scene.hint': 'Drag · scroll to zoom',
   'home.scene.fallback': '3D view unavailable: use the site list below.',
 
   'status.landed': 'Landed',

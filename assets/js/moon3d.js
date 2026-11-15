@@ -525,6 +525,20 @@ function createScene(THREE, OrbitControls, container, opts) {
 
   // --- camera, controls --------------------------------------------------
 
+  // The real scale under the point facing the camera, in kilometres per CSS
+  // pixel. Reported from the controls as well as the loop, so the readout keeps
+  // up even when a background tab throttles requestAnimationFrame.
+  let lastKmPerPx = 0;
+  const reportScale = () => {
+    if (!onScale || mini || !container.clientHeight) return;
+    const dist = camera.position.length();
+    const vFov = (camera.fov * Math.PI) / 180;
+    const kmPerPx = (2 * dist * Math.tan(vFov / 2) * MOON_RADIUS_KM) / container.clientHeight;
+    if (lastKmPerPx && Math.abs(kmPerPx - lastKmPerPx) <= lastKmPerPx * 0.0015) return;
+    lastKmPerPx = kmPerPx;
+    onScale(kmPerPx, dist);
+  };
+
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.07;
@@ -536,6 +550,7 @@ function createScene(THREE, OrbitControls, container, opts) {
   controls.minPolarAngle = 0.08;
   controls.maxPolarAngle = Math.PI - 0.02;
   controls.zoomToCursor = true;
+  controls.addEventListener('change', () => reportScale());
   controls.autoRotate = !reducedMotion && !live && !fit && autoRotate;
   controls.autoRotateSpeed = 0.28;
 
@@ -577,36 +592,8 @@ function createScene(THREE, OrbitControls, container, opts) {
     container.dataset.cam = `${camera.position.toArray().map((v) => v.toFixed(2)).join(',')}|south`;
   };
 
-  /**
-   * Side-on framing: the terminator seen in profile, the way an orbit diagram
-   * draws it. Reused by the map's orbit panel instead of a second canvas, so
-   * the page keeps a single WebGL context.
-   */
-  const frameOrbit = () => {
-    const distance = Math.min(6.2, fitDistance() * 1.22);
-    // Almost in the ecliptic plane, a little above it: the lit and dark halves
-    // are both visible, and the poles stay recognisable.
-    camera.position.set(0.16, 0.22, 0.96).normalize().multiplyScalar(distance);
-    controls.target.set(0, 0, 0);
-    camera.up.set(0, 1, 0);
-    camera.lookAt(controls.target);
-    camera.updateProjectionMatrix();
-    controls.update();
-    userMoved = true;
-    container.dataset.cam = `${camera.position.toArray().map((v) => v.toFixed(2)).join(',')}|orbit`;
-    container.dataset.view = 'orbit';
-  };
-
   // One reading at startup, so the scale bar is right before the first zoom.
-  if (onScale) {
-    setTimeout(() => {
-      const dist = camera.position.length();
-      const vFov = (camera.fov * Math.PI) / 180;
-      if (!disposed && container.clientHeight) {
-        onScale((2 * dist * Math.tan(vFov / 2) * MOON_RADIUS_KM) / container.clientHeight, dist);
-      }
-    }, 60);
-  }
+  setTimeout(reportScale, 60);
 
   camera.position.set(0.42, 0.75, 0.99).normalize().multiplyScalar(4.4);
   camera.up.set(0, 1, 0);
@@ -690,6 +677,36 @@ function createScene(THREE, OrbitControls, container, opts) {
   tip.className = 'scene-tip';
   tip.hidden = true;
   container.appendChild(tip);
+
+
+  /**
+   * Paint the label for a marker. A hover puts it under the cursor; a row in
+   * the list beside the globe puts it over that marker's own position.
+   */
+  const paintTip = (marker) => {
+    if (!marker) {
+      tip.hidden = true;
+      return;
+    }
+    const site = marker.userData.site;
+    const rect = container.getBoundingClientRect();
+    tip.hidden = false;
+    tip.innerHTML = `<strong>${site.mission}</strong><span>${site.name}</span>`
+      + `<span class="mono">${site.lat.toFixed(2)}°, ${site.lon.toFixed(2)}°</span>`;
+    let sx;
+    let sy;
+    if (marker === hovered) {
+      sx = ((pointer.x + 1) / 2) * rect.width;
+      sy = ((1 - pointer.y) / 2) * rect.height;
+    } else {
+      marker.getWorldPosition(projected).project(camera);
+      sx = ((projected.x + 1) / 2) * rect.width;
+      sy = ((1 - projected.y) / 2) * rect.height;
+    }
+    const x = Math.min(rect.width - 170, Math.max(8, sx + 14));
+    const y = Math.max(40, sy - 12);
+    tip.style.transform = `translate(${x}px, ${y}px)`;
+  };
   if (onScale) {
     // Orthographic disc: the whole 2R diameter spans 2R of the drawing, so the
     // scale is the drawn radius against the real radius.
@@ -723,12 +740,69 @@ function createScene(THREE, OrbitControls, container, opts) {
   const onPointerLeave = () => {
     pointer.set(-10, -10);
   };
+  let lastTap = null;
+  let tapHandled = false;
+  // A marker pointed at from the list beside the globe: hovering or focusing a
+  // row lights the same point a mouse hover would.
+  let highlighted = null;
+  let painted = null;
+  const projected = new THREE.Vector3();
+
+  /**
+   * A finger has no hover, so a tap does what a desktop hover does: it aims the
+   * ray at the touch point, and the next frame paints the same label. A second
+   * tap on the same marker opens it.
+   */
+  const runTap = (event) => {
+    toPointer(event);
+    raycaster.setFromCamera(pointer, camera);
+    const markerHit = raycaster.intersectObjects(markers, false)[0];
+    if (markerHit) {
+      const site = markerHit.object.userData.site;
+      if (lastTap && lastTap.id === site.id) {
+        lastTap = null;
+        onSelect?.(site.id);
+      } else {
+        lastTap = site;
+      }
+      return;
+    }
+    lastTap = null;
+    if (!onPick) {
+      pointer.set(-10, -10);
+      return;
+    }
+    const ground = raycaster.intersectObject(moon, false)[0];
+    if (!ground) {
+      pointer.set(-10, -10);
+      return;
+    }
+    globeHit.copy(ground.point);
+    onPick(toLatLon(globeHit));
+  };
+
   const onPointerDown = (event) => {
     downAt = { x: event.clientX, y: event.clientY };
+    if (event.pointerType === 'touch') toPointer(event);
+  };
+  const onPointerUp = (event) => {
+    if (event.pointerType !== 'touch') return;
+    // A drag is not a tap.
+    if (downAt && Math.hypot(event.clientX - downAt.x, event.clientY - downAt.y) > 8) return;
+    tapHandled = true;
+    runTap(event);
   };
   const onClick = (event) => {
     // A drag is not a click: rotating the globe must not drop a point.
     if (downAt && Math.hypot(event.clientX - downAt.x, event.clientY - downAt.y) > 6) return;
+    if (tapHandled) {
+      tapHandled = false;
+      return;
+    }
+    if (event.pointerType === 'touch') {
+      runTap(event);
+      return;
+    }
     if (hovered) {
       onSelect?.(hovered.userData.site.id);
       return;
@@ -746,6 +820,7 @@ function createScene(THREE, OrbitControls, container, opts) {
     renderer.domElement.addEventListener('pointermove', onPointerMove);
     renderer.domElement.addEventListener('pointerleave', onPointerLeave);
     renderer.domElement.addEventListener('pointerdown', onPointerDown);
+    renderer.domElement.addEventListener('pointerup', onPointerUp);
     renderer.domElement.addEventListener('click', onClick);
   } else {
     renderer.domElement.style.pointerEvents = 'none';
@@ -770,7 +845,6 @@ function createScene(THREE, OrbitControls, container, opts) {
 
   let raf = 0;
   let disposed = false;
-  let lastKmPerPx = 0;
 
   const tick = () => {
     if (disposed) return;
@@ -779,17 +853,7 @@ function createScene(THREE, OrbitControls, container, opts) {
     // Close enough that the base map starts to blur: fetch the next level.
     if (camera.position.length() < 2.05 && container.clientWidth > 480) upgradeOnZoom();
 
-    // Real scale under the point facing the camera: the same perspective maths
-    // the renderer uses, in kilometres per CSS pixel of the canvas.
-    if (onScale && !mini && container.clientHeight) {
-      const dist = camera.position.length();
-      const vFov = (camera.fov * Math.PI) / 180;
-      const kmPerPx = (2 * dist * Math.tan(vFov / 2) * MOON_RADIUS_KM) / container.clientHeight;
-      if (Math.abs(kmPerPx - lastKmPerPx) > lastKmPerPx * 0.005) {
-        lastKmPerPx = kmPerPx;
-        onScale(kmPerPx, dist);
-      }
-    }
+    reportScale();
 
     if (intro) {
       if (!intro.t0) intro.t0 = performance.now();
@@ -815,27 +879,22 @@ function createScene(THREE, OrbitControls, container, opts) {
       if (hovered) hovered.userData.hover = false;
       hovered = next;
       renderer.domElement.style.cursor = hovered ? 'pointer' : (onPick ? 'crosshair' : 'grab');
-      if (hovered) {
-        const site = hovered.userData.site;
-        const rect = container.getBoundingClientRect();
-        tip.hidden = false;
-        tip.innerHTML = `<strong>${site.mission}</strong><span>${site.name}</span>`
-          + `<span class="mono">${site.lat.toFixed(2)}°, ${site.lon.toFixed(2)}°</span>`;
-        const x = Math.min(rect.width - 170, Math.max(8, ((pointer.x + 1) / 2) * rect.width + 14));
-        const y = Math.max(40, ((1 - pointer.y) / 2) * rect.height - 12);
-        tip.style.transform = `translate(${x}px, ${y}px)`;
-      } else {
-        tip.hidden = true;
-      }
+    }
+
+    const active = hovered || highlighted;
+    if (active !== painted) {
+      painted = active;
+      paintTip(active);
     }
 
     // Ease the hovered marker instead of snapping it.
+    const lit = hovered || highlighted;
     for (const marker of markers) {
-      const target = marker === hovered ? marker.userData.baseScale * 1.75 : marker.userData.baseScale;
+      const target = marker === lit ? marker.userData.baseScale * 1.75 : marker.userData.baseScale;
       const current = marker.scale.x;
       const nextScale = current + (target - current) * 0.25;
       marker.scale.setScalar(nextScale);
-      marker.material.opacity = marker === hovered ? 1 : 0.95;
+      marker.material.opacity = marker === lit ? 1 : 0.95;
     }
 
     renderer.render(scene, camera);
@@ -848,10 +907,24 @@ function createScene(THREE, OrbitControls, container, opts) {
     /** Move the clock: the terminator follows. */
     setTime(ms) { applyTime(ms); },
     setProbe,
+    /** Light a site's marker from a list outside the canvas. */
+    highlightSite(id) {
+      highlighted = id ? markers.find((marker) => marker.userData.site.id === id) || null : null;
+      if (mini || disposed) return;
+      // Paint on the spot instead of waiting for the next frame: the cursor is
+      // already on the row when the label appears next to its point.
+      painted = hovered || highlighted;
+      paintTip(painted);
+      for (const marker of markers) {
+        const lit = marker === painted;
+        marker.scale.setScalar(marker.userData.baseScale * (lit ? 1.75 : 1));
+        marker.material.opacity = lit ? 1 : 0.95;
+      }
+      renderer.render(scene, camera);
+    },
     setView,
     framePole,
     frameGlobe,
-    frameOrbit,
     dispose() {
       disposed = true;
       cancelAnimationFrame(raf);
@@ -860,6 +933,7 @@ function createScene(THREE, OrbitControls, container, opts) {
         renderer.domElement.removeEventListener('pointermove', onPointerMove);
         renderer.domElement.removeEventListener('pointerleave', onPointerLeave);
         renderer.domElement.removeEventListener('pointerdown', onPointerDown);
+        renderer.domElement.removeEventListener('pointerup', onPointerUp);
         renderer.domElement.removeEventListener('click', onClick);
       }
       renderer.domElement.removeEventListener('webglcontextlost', onContextLost);
@@ -961,7 +1035,6 @@ function mountFallback(container, { sites = [], onSelect, hint, onScale = null }
     setProbe() {},
     framePole() {},
     frameGlobe() {},
-    frameOrbit() {},
     dispose() {
       canvas.removeEventListener('click', onClick);
       canvas.remove();

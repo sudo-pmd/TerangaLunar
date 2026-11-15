@@ -9,8 +9,9 @@
     <meta name="theme-color" content="#070a12">
     <meta property="og:title" content="TerangaLunar">
     <meta property="og:description" content="Le cycle jour/nuit de la Lune, en direct, et les vraies fenêtres d’atterrissage au pôle Sud.">
-    <meta property="og:image" content="assets/img/teranga-lunar.svg">
-    <link rel="icon" type="image/svg+xml" href="assets/img/teranga-mark.svg">
+    <meta property="og:image" content="assets/img/teranga-lunar.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="assets/img/favicon-64.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/img/favicon-180.png">
     <link rel="stylesheet" href="assets/css/tokens.css">
     <link rel="stylesheet" href="assets/css/app.css">
     <link rel="stylesheet" href="assets/css/theme.css">
@@ -35,8 +36,8 @@
          screen before the first module is even fetched. -->
     <div id="loader" class="loader" role="status" aria-live="polite">
       <div class="loader-inner">
-        <img class="loader-logo" src="assets/img/teranga-lunar.svg"
-          alt="TerangaLunar — Space &amp; Lunar Missions" width="300" height="72">
+        <img class="loader-logo logo-img" src="assets/img/teranga-lunar.png"
+          alt="TerangaLunar — Space &amp; Lunar Missions" width="420" height="120">
         <div class="loader-ring" aria-hidden="true"><span></span></div>
         <p class="loader-line" id="loader-line">Chargement</p>
         <p class="loader-fallback" id="loader-fallback" hidden></p>
@@ -63,7 +64,7 @@
         el.hidden = false;
         el.textContent = location.protocol === 'file:'
           ? 'Les modules du site ne se chargent pas depuis un fichier local. Ouvrez la version en ligne, ou lancez « node scripts/serve.mjs » puis http://127.0.0.1:4173.'
-          : 'Le chargement a échoué. Rechargez la page (Ctrl+F5) ; si cela persiste, la console du navigateur indique le fichier manquant.';
+          : 'Le chargement a échoué. Rechargez la page (Ctrl+F5). Si le blocage persiste, c\'est souvent le WebGL : l\'accélération matérielle est peut-être désactivée. Ouvrez chrome://settings/system et activez « Utiliser l\'accélération graphique », ou tapez chrome://flags dans la barre d\'adresse et vérifiez que « Override software rendering list » est réglé sur Enabled, puis relancez le navigateur. Sur Firefox : Paramètres → Général → Performances, cochez « Utiliser l\'accélération matérielle », et vérifiez webgl.disabled = false dans about:config.';
       }, 9000);
     </script>
     <script type="module" src="assets/js/app.js"></script>

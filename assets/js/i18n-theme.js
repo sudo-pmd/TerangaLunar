@@ -546,7 +546,7 @@ Object.assign(EXTRA.fr, {
   'map.orbit.term': 'Le terminateur est la frontière entre le jour et la nuit ; sa position au pôle Sud fixe les nuits des sites.',
   'map.orbit.back': 'Revenir à la Lune',
 
-  'home.scale': 'Échelle au point central',
+  'home.scale': 'Échelle',
   'home.scale.zoom': 'Molette pour zoomer : l’échelle suit.',
 
   'profile.all.title': 'Fiche complète',
@@ -590,7 +590,7 @@ Object.assign(EXTRA.en, {
   'map.orbit.term': 'The terminator is the day/night edge; its position over the south pole sets the sites’ nights.',
   'map.orbit.back': 'Back to the Moon',
 
-  'home.scale': 'Scale at the centre point',
+  'home.scale': 'Scale',
   'home.scale.zoom': 'Scroll to zoom: the scale follows.',
 
   'profile.all.title': 'Full sheet',
