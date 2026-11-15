@@ -144,6 +144,16 @@ const ICONS = {
   science: '<path d="M9.4 3.2h5.2M10.6 3.2v5.4L6 17.6A2.6 2.6 0 0 0 8.3 21h7.4a2.6 2.6 0 0 0 2.3-3.4L13.4 16.6V3.2"/>',
 };
 
+/** The entry that sits at the foot of the dock, under the rule. */
+const DOCK_TAIL = 'learn';
+
+function dockLink([key, href]) {
+  return `<a class="dock-item${key === DOCK_TAIL ? ' dock-item-tail' : ''}" href="${href}" data-nav="${key}" aria-label="${t(`nav.${key}`)}">
+        ${dockIcon(key)}
+        <span class="dock-pop" aria-hidden="true"><strong>${t(`nav.${key}`)}</strong></span>
+      </a>`;
+}
+
 function dockIcon(key) {
   return `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${ICONS[key] || ''}</svg>`;
 }
@@ -155,11 +165,9 @@ function shell() {
     <a class="skip-link" href="#main">${t('nav.skip')}</a>
     <main id="main" tabindex="-1"></main>
     <nav class="dock" aria-label="${t('nav.menu')}">
-      ${NAV.map(([key, href]) => `<a class="dock-item" href="${href}" data-nav="${key}" aria-label="${t(`nav.${key}`)}">
-        ${dockIcon(key)}
-        <span class="dock-pop" aria-hidden="true"><strong>${t(`nav.${key}`)}</strong><em>${t(`tip.${key}`)}</em></span>
-      </a>`).join('')}
+      ${NAV.filter(([key]) => key !== DOCK_TAIL).map(dockLink).join('')}
       <span class="dock-sep" aria-hidden="true"></span>
+      ${NAV.filter(([key]) => key === DOCK_TAIL).map(dockLink).join('')}
       <button type="button" class="dock-item dock-lang" id="lang-toggle"
         aria-label="${t('lang.switch')} — ${other.toUpperCase()}"
         title="${t('lang.switch')}">
@@ -220,6 +228,7 @@ async function render() {
 
   app.cleanup = fn(main, ctx) || null;
   document.body.dataset.route = app.state.route;
+  adaptLogos(main);
 
   const active = NAV_PARENT[app.state.route] || app.state.route;
   app.root.querySelectorAll('[data-nav]').forEach((link) => {
@@ -245,6 +254,89 @@ function renderAll() {
     setLang(getLang() === 'fr' ? 'en' : 'fr');
   });
   render();
+}
+
+/**
+ * The brand lockups are plain PNGs. Two things have to be fixed before they can
+ * sit on a dark page: the export carries a white background, and generous white
+ * margins that push the artwork into the middle of a big empty rectangle. Both
+ * are measured once, here, and the image is rebuilt: white knocked out, edges
+ * trimmed. Nothing is guessed from the file name.
+ */
+function cleanLogo(img) {
+  const finish = (canvas) => {
+    img.src = canvas.toDataURL('image/png');
+    img.classList.add('is-cleaned');
+  };
+
+  const run = () => {
+    try {
+      const w = img.naturalWidth;
+      const h = img.naturalHeight;
+      if (!w || !h) return;
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      ctx.drawImage(img, 0, 0);
+      const data = ctx.getImageData(0, 0, w, h);
+      const px = data.data;
+
+      // 1. White background to transparent. A soft band keeps the silver
+      //    outlines and the antialiased edges of the artwork intact.
+      let minX = w;
+      let minY = h;
+      let maxX = -1;
+      let maxY = -1;
+      for (let y = 0; y < h; y += 1) {
+        for (let x = 0; x < w; x += 1) {
+          const i = (y * w + x) * 4;
+          // Already-transparent pixels often keep a coloured RGB: alpha decides
+          // what is ink, never the colour alone.
+          if (px[i + 3] < 12) {
+            px[i + 3] = 0;
+            continue;
+          }
+          const lo = Math.min(px[i], px[i + 1], px[i + 2]);
+          if (lo > 246) {
+            px[i + 3] = 0;
+            continue;
+          }
+          if (lo > 236) px[i + 3] = Math.round(255 * ((246 - lo) / 10));
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+      if (maxX < 0) return;
+      ctx.putImageData(data, 0, 0);
+
+      // 2. Trim the margins, with a hair of breathing space.
+      const pad = Math.round(Math.max(w, h) * 0.008);
+      const x0 = Math.max(0, minX - pad);
+      const y0 = Math.max(0, minY - pad);
+      const cw = Math.min(w - x0, maxX - minX + 1 + pad * 2);
+      const ch = Math.min(h - y0, maxY - minY + 1 + pad * 2);
+      const out = document.createElement('canvas');
+      out.width = cw;
+      out.height = ch;
+      out.getContext('2d').drawImage(canvas, x0, y0, cw, ch, 0, 0, cw, ch);
+      finish(out);
+    } catch {
+      /* a canvas we cannot read leaves the image as it was exported */
+    }
+  };
+
+  if (img.complete && img.naturalWidth) run();
+  else img.addEventListener('load', run, { once: true });
+}
+
+function adaptLogos(scope = document) {
+  for (const img of scope.querySelectorAll('img.logo-img:not([data-adapted])')) {
+    img.dataset.adapted = '1';
+    cleanLogo(img);
+  }
 }
 
 function onHashChange() {
@@ -305,6 +397,7 @@ async function boot() {
   mountStarfield(document.body);
   app.root = document.getElementById('app');
   loader.init();
+  adaptLogos(document);
 
   // The two heavy assets are warmed while the configuration is parsed.
   const sceneWarm = Promise.all([

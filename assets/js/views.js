@@ -20,6 +20,10 @@ import { drawPointDisc } from './pointimage.js';
 
 const YEAR_SAMPLES = 366 * 24 + 1;
 
+/** New brand lockup (PNG). */
+const BRAND_LOCKUP = 'assets/img/teranga-lunar.png'; // optional-asset: deployed with the PNG
+
+
 function yearStartOf(ms) {
   return Date.UTC(new Date(ms).getUTCFullYear(), 0, 1);
 }
@@ -85,14 +89,17 @@ export function renderHome(root, ctx) {
       <div class="stage-globe" id="hero-scene" role="img"
         aria-label="${esc(t('home.scene.alt'))}"></div>
       <div class="stage-brand">
-        <img class="stage-logo" src="assets/img/teranga-lunar.svg"
-          alt="TerangaLunar — Space &amp; Lunar Missions" width="300" height="72" decoding="async">
+        <img class="stage-logo logo-img" src="${BRAND_LOCKUP}"
+          alt="TerangaLunar — Space &amp; Lunar Missions" width="992" height="342" decoding="async">
+        <p class="stage-hint mono">${esc(t('home.scene.hint'))}</p>
       </div>
-      <p class="stage-hint mono">${esc(t('home.scene.hint'))}</p>
       <div class="stage-scale" id="hero-scale" title="${esc(t('home.scale.zoom'))}">
-        <span class="scale-value mono" id="scale-value">—</span>
-        <span class="scale-bar" id="scale-bar" style="width:96px"></span>
         <span class="scale-label">${esc(t('home.scale'))}</span>
+        <div class="scale-track" id="scale-bar" style="width:96px" aria-hidden="true">
+          <span class="scale-mid"></span>
+        </div>
+        <span class="scale-value mono" id="scale-value">—</span>
+        <span class="scale-rate mono" id="scale-rate"></span>
       </div>
     </section>`;
 
@@ -101,6 +108,7 @@ export function renderHome(root, ctx) {
   const sceneHost = root.querySelector('#hero-scene');
   const scaleValue = root.querySelector('#scale-value');
   const scaleBar = root.querySelector('#scale-bar');
+  const scaleRate = root.querySelector('#scale-rate');
 
   // A real scale, not a decoration: kilometres per pixel at the sub-camera
   // point, rounded to a length whose bar stays around a hundred pixels.
@@ -113,9 +121,11 @@ export function renderHome(root, ctx) {
       if (px <= 120) km = step;
       if (px > 120) break;
     }
-    const px = Math.max(28, Math.min(150, Math.round(km / kmPerPx)));
+    const px = Math.max(30, Math.min(150, Math.round(km / kmPerPx)));
     scaleBar.style.width = `${px}px`;
     scaleValue.textContent = `${fmtNum(km, 0)} km`;
+    // The live part: how much ground one pixel covers right now.
+    if (scaleRate) scaleRate.textContent = `1 px ≈ ${fmtNum(kmPerPx, kmPerPx < 10 ? 1 : 0)} km`;
   };
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 

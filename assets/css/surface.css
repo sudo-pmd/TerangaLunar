@@ -1763,3 +1763,358 @@ body.hide-study-disc .study-disc {
     grid-column: 1 / -1;
   }
 }
+
+/* ------------------------------------------------------ brand lockup (PNG)
+
+   The new logo files are wider than the old SVGs and may carry their own white
+   background. `logo-plate` (set by JS after reading the first pixel) gives the
+   artwork a light plate instead of a white box on the dark sky. */
+
+.stage-logo,
+.loader-logo {
+  width: min(290px, 62vw);
+  height: auto;
+  max-height: 42vh;
+  object-fit: contain;
+}
+
+@media (max-width: 720px) {
+  .stage-logo {
+    width: min(220px, 66vw);
+  }
+}
+
+/* ------------------------------------------------------ landing: the scale
+
+   A cartographic scale, not a widget: a bracket with a half tick, the round
+   length under it, and the caption above. The width is the real length in
+   kilometres at the centre of the globe. */
+
+.stage-scale {
+  position: fixed;
+  right: clamp(74px, 8vw, 104px);
+  bottom: clamp(20px, 3.4vh, 34px);
+  z-index: 4;
+  display: grid;
+  gap: 5px;
+  justify-items: end;
+  padding: 9px 12px 8px;
+  pointer-events: none;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: linear-gradient(160deg, rgba(12, 18, 30, 0.72), rgba(8, 12, 20, 0.4));
+  box-shadow: 0 18px 44px -36px rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(7px);
+}
+
+.stage-scale .scale-label {
+  font-size: 0.5625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(203, 213, 225, 0.55);
+  line-height: 1;
+}
+
+.stage-scale .scale-track {
+  position: relative;
+  height: 9px;
+  margin-top: 1px;
+  border-left: 1px solid rgba(232, 228, 218, 0.7);
+  border-right: 1px solid rgba(232, 228, 218, 0.7);
+  border-bottom: 1px solid rgba(232, 228, 218, 0.7);
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(to right, rgba(246, 178, 60, 0.32), rgba(246, 178, 60, 0.05));
+  transition: width 0.18s ease;
+}
+
+.stage-scale .scale-mid {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(232, 228, 218, 0.34);
+}
+
+.stage-scale .scale-track::before,
+.stage-scale .scale-track::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  width: 1px;
+  height: 3px;
+  background: rgba(232, 228, 218, 0.55);
+}
+
+.stage-scale .scale-track::before { left: 0; }
+.stage-scale .scale-track::after { right: 0; }
+
+.stage-scale .scale-value {
+  font-size: 0.8125rem;
+  line-height: 1;
+  color: #f4f6fb;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 720px) {
+  .stage-scale {
+    right: 70px;
+    bottom: 14px;
+    padding: 7px 9px 6px;
+  }
+
+  .stage-scale .scale-label {
+    display: none;
+  }
+}
+
+/* --------------------------------------------------------- dock: the tail
+
+   "Comprendre" sits at the foot of the dock, under the rule that divides the
+   pages from the language switch. */
+.dock-item-tail {
+  margin-top: 2px;
+  margin-bottom: 4px;
+}
+
+/* ------------------------------------------------------ brand lockup (PNG)
+
+   The PNG is cut to its artwork and its white background knocked out once, in
+   app.js. These sizes only have to frame it: a little larger than the old SVG
+   because the lockup carries its own wordmark. */
+
+.stage-logo,
+.loader-logo {
+  width: min(340px, 62vw);
+  height: auto;
+  max-height: 30vh;
+  object-fit: contain;
+  filter: drop-shadow(0 16px 30px rgba(0, 0, 0, 0.55));
+}
+
+.stage-logo {
+  width: min(300px, 58vw);
+}
+
+@media (max-width: 720px) {
+  .stage-logo {
+    width: min(230px, 62vw);
+  }
+
+  .loader-logo {
+    width: min(260px, 68vw);
+  }
+}
+
+/* The landing hint stops before the scale cartouche instead of running under it. */
+.stage-hint {
+  max-width: calc(100% - 190px);
+}
+
+@media (max-width: 720px) {
+  .stage-hint {
+    max-width: calc(100% - 150px);
+    font-size: 0.6875rem;
+  }
+}
+
+/* The live rate under the scale: the only number that moves with every wheel
+   notch, in kilometres per pixel of the screen. */
+.stage-scale .scale-rate {
+  font-size: 0.625rem;
+  line-height: 1;
+  color: rgba(203, 213, 225, 0.5);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The brand column owns the bottom-left corner: lockup, then the hint, so the
+   two can never land on top of each other whatever the logo's height. */
+.stage-brand {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.stage-brand .stage-hint {
+  position: static;
+  left: auto;
+  bottom: auto;
+  max-width: min(34ch, 62vw);
+  margin: 0;
+}
+
+/* On a phone the two bottom corners have to share 390 px: the lockup and its
+   hint on the left, the scale on the right, with real air between them. */
+@media (max-width: 720px) {
+  .stage-logo {
+    width: min(178px, 46vw);
+  }
+
+  .stage-brand {
+    gap: 6px;
+  }
+
+  .stage-brand .stage-hint {
+    max-width: min(38ch, 40vw);
+    font-size: 0.625rem;
+    line-height: 1.35;
+  }
+
+  .stage-scale {
+    right: 64px;
+    bottom: 16px;
+  }
+}
+
+/* ------------------------------------------------------ brand, one line
+
+   The lockup is smaller now and the hint under it stays on a single line: on a
+   phone it is the difference between a caption and a small paragraph. */
+.stage-logo {
+  width: min(215px, 46vw);
+}
+
+.stage-brand .stage-hint,
+.stage-brand .stage-hint.mono {
+  max-width: none;
+  white-space: nowrap;
+  overflow: visible;
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 720px) {
+  .stage-logo {
+    width: min(150px, 38vw);
+  }
+
+  .stage-brand .stage-hint {
+    max-width: none;
+    font-size: 0.625rem;
+  }
+}
+
+/* The map's panel menu is the guided tour's menu: same rail, same chips. */
+.map-rail.step-nav {
+  top: 22px;
+}
+
+.map-rail.step-nav button {
+  border: 0;
+  border-left: 2px solid var(--line);
+  border-radius: 0 12px 12px 0;
+  background: transparent;
+  color: var(--ink-2);
+}
+
+.map-rail.step-nav button[aria-current='step'] {
+  border-left-color: var(--gold);
+  background: rgba(22, 32, 50, 0.95);
+  color: #fff;
+}
+
+@media (max-width: 900px) {
+  .map-rail.step-nav {
+    grid-auto-flow: row !important;
+    grid-auto-columns: auto !important;
+    overflow: visible !important;
+    gap: 8px;
+    padding-bottom: 12px;
+  }
+
+  .map-rail.step-nav button {
+    border: 1px solid var(--line) !important;
+    border-radius: 999px !important;
+  }
+
+  .map-rail.step-nav button[aria-current='step'] {
+    border-color: rgba(246, 178, 60, 0.55) !important;
+    background: rgba(246, 178, 60, 0.14) !important;
+    color: #ffe1a3 !important;
+  }
+}
+
+/* The dock label is the name only: one line, no second row. */
+.dock-pop {
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+
+.dock-pop strong {
+  font-size: 0.75rem;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------- the point panel
+
+   Two equal columns for the coordinates, and the two actions on one line: at
+   289 px of content a `flex: 1 1 140px` pair used to wrap into two full rows. */
+.probe-fields {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.panel-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.panel-actions .btn {
+  width: 100%;
+  flex: none;
+  padding-inline: 10px;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 360px) {
+  .panel-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ------------------------------------------------------ study: the options
+
+   Every option is a row of the same height, the checkbox on the first line of
+   its label: no more sentences that start at three different places. */
+.study-options .opt-grid {
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 6px 20px;
+}
+
+.study-options label {
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 40px;
+  padding: 6px 0;
+}
+
+.study-options label span {
+  line-height: 1.4;
+  padding-top: 1px;
+}
+
+.study-options input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+}
+
+/* --------------------------------------------------------- loader & icons */
+
+.loader-logo {
+  width: min(200px, 46vw);
+}
+
+/* The scale is a mark on the sky, not a card: no plate, no frame. */
+.stage-scale {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  text-shadow: 0 1px 8px rgba(4, 7, 14, 0.85);
+}

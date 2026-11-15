@@ -8,8 +8,7 @@
  *  2. the 3D globe, lit by the same subsolar vector;
  *  3. a free study point (click the globe, or type coordinates) with the Sun
  *     and Earth elevation at that exact spot;
- *  4. the Sun–Earth–Moon diagram, to scale for the radii, and the same globe
- *     seen from under the south pole.
+ *  4. nothing else: the globe on the right is the whole 3D story.
  *
  * Every number on the page comes from `ephemeris.js` and from the LOLA horizon
  * masks loaded at boot — nothing is decorative.
@@ -37,8 +36,6 @@ const RAIL = [
   ['shadow', 'map.panel.shadow'],
   ['probe', 'map.panel.probe'],
   ['sites', 'map.panel.sites'],
-  ['orbit', 'map.panel.orbit'],
-  ['south', 'map.panel.south'],
 ];
 
 export function renderMap(root, ctx) {
@@ -54,10 +51,10 @@ export function renderMap(root, ctx) {
       <h1 class="sr-only">${esc(t('map.title'))}</h1>
 
       <div class="map-main">
-      <nav class="map-rail" aria-label="${esc(t('map.rail'))}">
-        ${RAIL.map(([id, key], i) => `<button type="button" data-panel="${id}" aria-pressed="${i === 0}">
-          <span class="rail-n" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span>
-          <span class="rail-t">${esc(t(key))}</span>
+      <nav class="step-nav map-rail" aria-label="${esc(t('map.rail'))}">
+        ${RAIL.map(([id, key], i) => `<button type="button" data-panel="${id}" aria-current="${i === 0 ? 'step' : 'false'}">
+          <span class="step-num" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span>
+          <span>${esc(t(key))}</span>
         </button>`).join('')}
       </nav>
 
@@ -138,30 +135,6 @@ export function renderMap(root, ctx) {
           <p class="data-note">${esc(t('map.clockNote'))}</p>
         </div>
 
-        <div class="map-panel" data-panel="orbit" hidden>
-          <header class="panel-head">
-            <h2>${esc(t('map.orbit.title'))}</h2>
-            <p>${esc(t('map.orbit.lede'))}</p>
-          </header>
-          <dl class="orbit-facts">
-            <div><dt>${esc(t('map.orbit.phase'))}</dt><dd class="mono" id="orbit-phase">—</dd></div>
-            <div><dt>${esc(t('map.orbit.elong'))}</dt><dd class="mono" id="orbit-elong">—</dd></div>
-            <div><dt>${esc(t('map.orbit.illum'))}</dt><dd class="mono" id="orbit-illum">—</dd></div>
-          </dl>
-          <p class="hint">${esc(t('map.orbit.hint'))}</p>
-          <p class="data-note">${esc(t('map.orbit.term'))}</p>
-          <div class="panel-actions">
-            <button type="button" class="btn quiet" id="orbit-back">${esc(t('map.orbit.back'))}</button>
-          </div>
-        </div>
-
-        <div class="map-panel" data-panel="south" hidden>
-          <header class="panel-head">
-            <h2>${esc(t('map.south.title'))}</h2>
-            <p>${esc(t('map.south.lede'))}</p>
-          </header>
-          <div class="globe-host globe-host-south" id="south-host"></div>
-        </div>
       </div>
       </div>
 
@@ -198,11 +171,9 @@ export function renderMap(root, ctx) {
   let raf = 0;
   let disposed = false;
   let scene = null;
-  let south = null;
   let backendSub = null;
   let backendAt = 0;
   let lastPaint = 0;
-  let orbitView = false;
 
   /* ----------------------------------------------------------- shadow ribbon */
 
@@ -284,7 +255,6 @@ export function renderMap(root, ctx) {
       lonInput.value = '';
     }
     scene?.setProbe(probe);
-    south?.setProbe(probe);
     paintProbe();
     if (commit) actions.setProbe(probe, { silent: true });
   };
@@ -353,9 +323,7 @@ export function renderMap(root, ctx) {
     scrubOffset.textContent = `${shown > 0 ? '+' : ''}${shown} ${t('ui.hours')}`;
 
     scene?.setTime(simMs);
-    south?.setTime(simMs);
     paintProbe();
-    if (orbitView) paintOrbit();
   };
 
   const setPaused = (next) => {
@@ -404,6 +372,14 @@ export function renderMap(root, ctx) {
 
   root.querySelectorAll('[data-site]').forEach((button) => {
     button.addEventListener('click', () => actions.openSite(button.dataset.site));
+    // Pointing at a row in the list lights that site on the globe, exactly as
+    // hovering the marker itself would.
+    const light = () => scene?.highlightSite(button.dataset.site);
+    const dark = () => scene?.highlightSite(null);
+    button.addEventListener('pointerenter', light);
+    button.addEventListener('focus', light);
+    button.addEventListener('pointerleave', dark);
+    button.addEventListener('blur', dark);
   });
 
   root.querySelector('#probe-form').addEventListener('submit', (event) => {
@@ -455,71 +431,22 @@ export function renderMap(root, ctx) {
   // The lower panels are built the first time they are opened: a hidden
   // canvas has no width, and a second WebGL context costs memory we do not
   // need until the reader asks for the pole view.
-  const mountSouth = () => {
-    if (south) return;
-    mountMoon(root.querySelector('#south-host'), {
-      ...common,
-      view: 'south',
-      hint: '',
-    }).then((api) => {
-      if (disposed) { api.dispose(); return; }
-      south = api;
-      api.setProbe(probe);
-      api.setTime(simMs);
-    }).catch(() => {});
-  };
-
   /* ------------------------------------------------------------ side menu */
 
   const railButtons = [...root.querySelectorAll('.map-rail [data-panel]')];
   const panels = [...root.querySelectorAll('.map-panel')];
 
-  // The orbit panel turns the 3D globe side-on instead of drawing a second
-  // diagram: one WebGL context, one light, and the terminator you see is the
-  // terminator the numbers come from.
-  const enterOrbit = () => {
-    orbitView = true;
-    scene?.frameOrbit();
-    paintOrbit();
-  };
-
-  const leaveOrbit = () => {
-    if (!orbitView) return;
-    orbitView = false;
-    scene?.frameGlobe();
-  };
-
-  const paintOrbit = () => {
-    const dn = root.querySelector('#orbit-phase');
-    if (!dn) return;
-    const g = siteGeometry(poleSite, simMs);
-    const sAlt = g.sun.alt;
-    const eAlt = g.earth.alt;
-    const dAz = ((g.earth.az - g.sun.az) * Math.PI) / 180;
-    const cosE = Math.sin((sAlt * Math.PI) / 180) * Math.sin((eAlt * Math.PI) / 180)
-      + Math.cos((sAlt * Math.PI) / 180) * Math.cos((eAlt * Math.PI) / 180) * Math.cos(dAz);
-    const elong = (Math.acos(Math.max(-1, Math.min(1, cosE))) * 180) / Math.PI;
-    const illum = (1 - Math.cos((elong * Math.PI) / 180)) / 2;
-    dn.textContent = `${fmtNum(illum * 100, 0)} %`;
-    root.querySelector('#orbit-elong').textContent = `${fmtNum(elong, 1)}°`;
-    root.querySelector('#orbit-illum').textContent = `${fmtNum(180 - elong, 1)}°`;
-  };
-
   const openPanel = (id) => {
     railButtons.forEach((button) => {
-      button.setAttribute('aria-pressed', String(button.dataset.panel === id));
+      button.setAttribute('aria-current', button.dataset.panel === id ? 'step' : 'false');
     });
     panels.forEach((panel) => { panel.hidden = panel.dataset.panel !== id; });
-    if (id !== 'orbit') leaveOrbit();
-    if (id === 'south') mountSouth();
-    if (id === 'orbit') enterOrbit();
     if (id === 'shadow') paint();
   };
 
   railButtons.forEach((button) => {
     button.addEventListener('click', () => openPanel(button.dataset.panel));
   });
-  root.querySelector('#orbit-back').addEventListener('click', () => openPanel('shadow'));
   openPanel('shadow');
 
   // The Python service, when it runs, supplies the subsolar point; without it
@@ -545,7 +472,6 @@ export function renderMap(root, ctx) {
     cancelAnimationFrame(raf);
     clearInterval(backendTimer);
     scene?.dispose();
-    south?.dispose();
   };
 }
 

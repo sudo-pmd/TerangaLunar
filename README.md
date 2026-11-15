@@ -1,73 +1,64 @@
 # TerangaLunar
 
-**Space & Lunar Missions** — le cycle jour/nuit au pôle Sud de la Lune, en direct,
-et les vraies fenêtres d'atterrissage des missions CLPS.
+TerangaLunar suit le cycle jour/nuit au pôle Sud de la Lune et le confronte aux
+onze points d'atterrissage du programme CLPS. Une seule question traverse le
+site : à un endroit donné, quand y a-t-il du Soleil, quand la Terre est-elle en
+vue, et combien de temps une mission peut-elle tenir avant la nuit.
 
-Le site est public : aucun compte, aucun serveur indispensable. Il se lit à deux
-niveaux — une découverte guidée pour le grand public, un espace scientifique pour
-vérifier chaque chiffre.
-
----
+Le site est public, sans compte, et fonctionne sans serveur. Il se lit à deux
+niveaux : une découverte guidée pour qui découvre le sujet, un espace
+scientifique pour qui veut vérifier chaque chiffre.
 
 ## Les pages
 
-| Route | Page | Public |
-| --- | --- | --- |
-| `#/` | La Lune, plein écran. Rien d'autre. | tous |
-| `#/map` | Le globe 3D en plein écran, et un menu vertical qui ouvre une section à la fois : ombre, point d'étude, sites, orbite, pôle Sud | tous |
-| `#/learn` | Visite guidée en 4 étapes interactives | tous |
-| `#/sites` | Catalogue filtrable des 11 points | tous |
-| `#/science` | Métriques, hypothèses, données, API | scientifique |
-| `#/site/<id>` | Fiche d'un site : horizon, frise, seuils, export | scientifique |
-| `#/dates` | Meilleures dates de départ sur l'année | scientifique |
-| `#/compare` | Comparaison de 2 ou 3 sites | scientifique |
-| `#/discover` | Glossaire, FAQ, repères | tous |
-| `#/help` | Méthode, sources, licences | tous |
+| Route | Contenu |
+| --- | --- |
+| `#/` | La Lune en plein écran, avec une échelle de distance réelle en bas |
+| `#/map` | Le globe 3D et un menu à trois entrées : ombre, point d'étude, sites |
+| `#/learn` | Visite guidée en quatre étapes |
+| `#/sites` | Catalogue filtrable des onze points, avec un globe qui suit le survol |
+| `#/science` | Métriques, hypothèses, données, API |
+| `#/site/<id>` | Fiche d'un site : horizon, frise, seuils, export |
+| `#/study?lat=…&lon=…` | Fiche d'étude d'un point, imprimable |
+| `#/dates` | Meilleures dates de départ sur l'année |
+| `#/compare` | Comparaison de deux ou trois sites |
+| `#/discover` | Glossaire, questions fréquentes, repères |
+| `#/help` | Méthode, sources, licences |
 
-Chaque page a sa propre URL ; un lien reproduit la même vue. Un point d'étude se
-partage aussi : `#/map?lat=-84.5&lon=12.3`.
+Chaque page a sa propre URL, un lien reproduit la même vue, et un point d'étude
+se partage (`#/map?lat=-84.5&lon=12.3`). Tout l'état vit dans le fragment
+d'adresse : il n'y a ni cookie ni stockage local.
 
-La navigation tient dans un dock vertical à droite, avec le passage FR/EN en bas.
-Pas d'en-tête : sur l'accueil, la Lune occupe tout l'écran.
+La navigation tient dans un dock vertical à droite. Les quatre pages principales
+sont groupées en haut, un filet les sépare de la visite guidée, et le passage
+FR/EN ferme la colonne. Pas d'en-tête : sur l'accueil, la Lune occupe l'écran.
 
-## Chargement
+## Le moteur
 
-`index.html` contient l'écran de chargement — le logo, une roue, et une seule
-ligne qui dit ce qui est en cours (« Relief lunaire… », « Scène 3D… ») : il est
-visible avant même le premier module JavaScript. Il disparaît quand la
-configuration, les masques de relief et la texture 4K sont prêts — avec un délai
-minimal pour éviter un clignotement, et un plafond de 9 s pour ne jamais rester
-bloqué sur une texture lente.
+Quatre couches, toutes calculées dans le navigateur.
 
-## Ce que calcule le moteur
+L'éphéméride reprend les séries de Meeus (chapitres 25 et 47), avec une
+précision d'environ 0,01° pour le Soleil et 10 secondes d'arc pour la Lune. Le
+repère lunaire `MOON_ME` est reconstruit depuis l'état de Cassini : le pôle est à
+1,5424° de l'écliptique, le méridien d'origine pointe vers la Terre moyenne, et
+la libration en longitude comme en latitude est comprise. La géométrie locale
+donne ensuite l'élévation et l'azimut du Soleil et de la Terre depuis chaque
+site, au-dessus du masque d'horizon. L'agrégation en tire la part ensoleillée,
+la plus longue nuit continue, les fenêtres de communication et une note pondérée
+entre énergie et communications.
 
-1. **Éphéméride** — séries de Meeus (ch. 25 et 47), ~0,01° pour le Soleil et 10″
-   pour la Lune.
-2. **Repère lunaire** — `MOON_ME` reconstruit depuis l'état de Cassini : pôle à
-   1,5424° de l'écliptique, méridien d'origine vers la Terre moyenne. Libration
-   en longitude et en latitude comprise.
-3. **Géométrie locale** — élévation et azimut du Soleil et de la Terre depuis
-   chaque site, au-dessus du masque d'horizon.
-4. **Agrégation** — part ensoleillée, plus longue nuit continue, fenêtres de
-   communication, note pondérée énergie / communications.
+`node scripts/selftest.mjs` passe 35 vérifications indépendantes. Elles portent
+sur des faits contrôlables : élongation à la nouvelle Lune du 8 avril 2024
+(0,02° d'écart), élévation solaire maximale au pôle (1,64°), plage de la Terre
+entre −7,0° et +6,7°, libration (7,9° et 6,8°), nuit équatoriale de 14,8 jours,
+et le contrat des séries précalculées.
 
-`node scripts/selftest.mjs` exécute **35 vérifications** indépendantes :
-élongation à la nouvelle Lune du 8 avril 2024 (0,02°), élévation solaire
-maximale au pôle (1,64°), plage de la Terre (−7,0° à +6,7°), libration (7,9° /
-6,8°), nuit équatoriale (14,8 jours), contrat des séries précalculées.
+## Le relief est mesuré, pas illustré
 
-## Le relief est mesuré, plus illustré
-
-`pipeline/build_terrain.py` lit le produit PDS **LDEM_80S_80M** (LOLA, 80 m/pixel,
-stéréographique polaire sud, 7600 × 7600, 16 bits) et écrit `data/terrain.json` :
-pour chaque site polaire, 720 élévations apparentes (une tous les 0,5° d'azimut),
-courbure lunaire comprise.
-
-```bash
-python pipeline/build_terrain.py            # relit pipeline/lola/LDEM_80S_80M.IMG
-```
-
-Résultat sur les quatre sites couverts par l'empreinte du DEM :
+`pipeline/build_terrain.py` lit le produit PDS LDEM_80S_80M de LOLA (80 m par
+pixel, projection stéréographique polaire sud, 7600 × 7600, 16 bits) et écrit
+`data/terrain.json` : pour chaque site polaire, 720 élévations apparentes, une
+tous les 0,5° d'azimut, courbure lunaire comprise.
 
 | Site | Altitude | Horizon maximal |
 | --- | --- | --- |
@@ -76,208 +67,116 @@ Résultat sur les quatre sites couverts par l'empreinte du DEM :
 | Crête de Mons Mouton | 6 012 m | 12,5° |
 | Pôle Sud (référence) | 603 m | 22,4° |
 
-Les sept autres points (équateur, face visible, face cachée) sont hors de
-l'empreinte 80° S : ils gardent le profil analytique de `data/sites.json`, et
-chaque fiche l'écrit noir sur blanc (`isMeasured()` dans `assets/js/horizon.js`).
-
-Deux détails du label PDS valent d'être connus, ils sont expliqués dans
-`pipeline/horizon_dem.py` : `LSB_INTEGER` impose du petit-boutiste, et
-`SCALING_FACTOR` donne une hauteur en mètres (pas un rayon). Le DEM est lu en
-`memmap` : 110 Mo sur disque, quelques mégaoctets en mémoire.
+Les sept autres points, à l'équateur ou sur les faces visible et cachée, tombent
+hors de l'empreinte 80° S. Ils gardent le profil analytique de `data/sites.json`,
+et chaque fiche l'écrit noir sur blanc plutôt que de laisser croire à une mesure.
 
 ## La scène 3D
 
-- **Texture** : `assets/img/moon.jpg`, 4096 × 2048 (mosaïque LROC), précédée de
-  `assets/img/low/moon.jpg` pour le premier rendu.
-- **Relief** : `assets/img/ldem_3_8bit.jpg` module les sommets (amplitude
-  exagérée ×3 environ, sans quoi 5 km sur 1737 km ne se voient pas) et incline la
-  normale pour que les crêtes accrochent la lumière rasante. L'inclinaison est
-  calculée dans le repère du corps, pas par dérivées d'écran : celles-ci
-  explosaient aux pôles, où la projection équirectangulaire écrase la longitude.
-- **Terminateur** : `dot(normale, direction subsolaire)` dans le fragment shader,
-  donc il est toujours là où l'éphéméride le place, quelle que soit la carte.
-- **Marqueurs** : sprites dessinés au canvas (halo, anneau, cœur), toujours face
-  caméra, taille constante à l'écran, animés au survol.
-- **Point d'étude** : un clic sur le globe (ou deux coordonnées) pose un
-  réticule et affiche l'élévation du Soleil et de la Terre à cet endroit précis.
-- **Vue du pôle Sud** : la même scène, caméra sous la Lune (`view: 'south'`), en
-  bas de la page carte.
+Une seule texture d'albédo (mosaïque LROC, 4096 × 2048), précédée d'une version
+légère pour le premier rendu. Le relief global module les sommets avec une
+amplitude exagérée environ trois fois, sans quoi cinq kilomètres sur un rayon de
+1737 ne se voient pas, et incline la normale pour que les crêtes accrochent la
+lumière rasante. Cette inclinaison est calculée dans le repère du corps et non
+par dérivées d'écran, qui explosent aux pôles là où la projection
+équirectangulaire écrase la longitude.
 
-## Dimensions réelles
+Le terminateur vient de `dot(normale, direction subsolaire)` dans le fragment
+shader : il est toujours là où l'éphéméride le place, quelle que soit la carte.
+Les marqueurs sont des sprites dessinés au canvas, toujours face caméra et de
+taille constante à l'écran.
 
-Le diagramme Soleil–Terre–Lune respecte les **rayons** : Lune 1737 km, Terre
-6371 km (×3,67), Soleil ×109 Terres. Les distances, elles, sont comprimées — et le
-diagramme l'écrit. Faire glisser la Lune autour de la Terre change la phase, donc
-l'horloge et le terminateur : un tour complet vaut un mois synodique.
+Trois gestes, identiques d'un appareil à l'autre. Survoler un marqueur affiche
+son étiquette, un clic ouvre la fiche. Sur un écran tactile, un premier appui
+fait exactement ce que fait le survol, un second ouvre la fiche. Survoler une
+ligne de la liste des sites allume le même marqueur sur le globe, avec
+l'étiquette placée au-dessus du point.
 
-## Ajouter un site
+L'échelle de l'accueil n'est pas décorative : elle donne la longueur réelle de
+la barre au centre du globe, recalculée à chaque cran de molette depuis la
+distance de la caméra, et affiche en dessous la valeur vivante du kilomètre par
+pixel.
 
-Éditez `data/sites.json`, rien d'autre : le schéma est validé au chargement et
-les champs manquants produisent un message lisible. Si le site tombe dans
-l'empreinte du LDEM, relancez `build_terrain.py` pour lui donner un masque mesuré.
+## La fiche d'étude
 
-```json
-{
-  "id": "mon_site", "mission": "TO-XX", "company": "Opérateur",
-  "name": "Nom", "nameFr": "Nom", "lat": -84.5, "lon": 12.3,
-  "status": "planned", "type": "polar", "date": "2027",
-  "precision": "approximate", "source": "https://…",
-  "horizon": { "max": 1.0, "floor": -5.0, "az": 180, "rough": 0.4 }
-}
-```
+`#/study` rassemble, pour un point quelconque, les chiffres du séjour, le disque
+du point vu de dessus, la frise d'ensoleillement et les fenêtres de
+communication. Le disque est une projection orthographique inverse de la texture
+d'albédo, dessinée dans un canvas : il est donc net, et imprimable.
 
-## Service de calcul Python (optionnel)
+Un champ permet de nommer le point ; le nom voyage dans l'URL et n'est stocké
+nulle part. Cinq cases décident de ce qui reste sur la page : en-tête et
+coordonnées, photo du point, valeurs instantanées, courbes, hypothèses et
+sources. Elles agissent à l'écran comme à l'impression, et la feuille de style
+d'impression compose une page A4 autonome, sans le dock ni les boutons.
 
-`backend/app.py` expose `/api/health`, `/api/subsolar` et `/api/site` avec
-SpiceyPy et les noyaux officiels. Le site l'utilise s'il répond, et retombe sinon
-sur le calcul local — l'espace scientifique affiche lequel des deux a servi.
+## La marque
 
-```bash
-python -m pip install -r backend/requirements.txt
-uvicorn backend.app:app --port 8000
-```
+Le logo est un PNG livré avec le site. Comme l'export contient de grandes marges
+transparentes et un fond blanc, le navigateur le retraite une fois au chargement :
+il mesure la zone réellement dessinée, rogne le reste, et rend transparents les
+pixels blancs avec un dégradé doux pour ne pas manger les contours argentés. Il
+passe ainsi de 1408 × 768 à 1012 × 362, et se pose sur le ciel sans plaque.
 
-## Précalcul SPICE hors ligne (optionnel)
+L'icône d'onglet est générée par `scripts/make-favicon.py`, qui rogne la même
+marque, la pose sur le fond nuit de la charte avec un coin arrondi et écrit les
+deux tailles utiles. Un emblème clair sur fond transparent ne se lit pas à 16
+pixels sur une barre d'onglets claire.
 
-```bash
-python pipeline/precompute.py --start 2026-01-01 --days 366 --step 3600 --check
-```
+## Données
 
-Écrit `data/precomputed/index.json` et un fichier par site (~170 kB/an). La série
-n'est utilisée que si elle couvre exactement la fenêtre demandée.
+`data/sites.json` décrit les onze points : mission, opérateur, coordonnées,
+statut, type, date, précision et profil d'horizon analytique. Le schéma est
+validé au chargement, et un champ manquant produit un message lisible plutôt
+qu'un écran vide.
 
-## Lancer le site
+Autour, `data/terrain.json` porte les masques mesurés, `data/seuils.json` les
+trois seuils de la comparaison, `data/scenarios.json` les configurations de test,
+et `data/glossaire.json` avec `data/sources.json` alimentent les pages de
+pédagogie et la page méthode.
 
-```bash
-node scripts/serve.mjs 4173    # http://127.0.0.1:4173
-node scripts/selftest.mjs      # 35 vérifications
-```
+## Accessibilité et langues
 
-N'importe quel hébergeur statique convient. `scripts/serve.mjs` relaie `/api`
-vers le service Python s'il tourne, et répond `204` sinon (pas de 404 en console).
+Tout le contenu existe en français et en anglais, y compris les libellés
+d'interface, les infobulles et les textes de la fiche d'étude. La mise en page
+tient à 375 pixels de large, les cibles tactiles font 44 pixels, l'information
+n'est jamais portée par la couleur seule (chaque état a son libellé), et les
+animations s'effacent avec `prefers-reduced-motion`. Le dock, les panneaux et les
+tableaux ont été vérifiés au clavier, et les tableaux larges défilent
+horizontalement au lieu de casser la page.
 
-## Publier sur GitHub Pages
-
-Le site est entièrement statique : aucun build, aucune compilation. Ce qui est
-dans le dossier est ce qui est publié, tel quel.
-
-### Ce qui empêchait la carte de s'afficher en ligne
-
-| Cause | Effet | Ce qui est en place |
-| --- | --- | --- |
-| Three.js chargé depuis jsdelivr | si le CDN est filtré (proxy, réseau d'entreprise, CSP), le module ne charge pas : le globe reste vide et la carte 3D disparaît | Three.js est **livré avec le site** (`assets/vendor/three/`), l'import map pointe sur des chemins relatifs |
-| `pipeline/lola/LDEM_80S_80M.IMG` (110 Mo) | GitHub refuse tout fichier de plus de 100 Mo : le `push` échoue | `pipeline/lola/` et `*.IMG` sont dans `.gitignore` — le produit LOLA reste sur votre disque |
-| Casse des noms de fichiers | Windows ne distingue pas `Texture.JPG` de `texture.jpg`, GitHub Pages si : 404 silencieux en ligne seulement | `scripts/check-deploy.mjs` compare chaque référence au nom réel du fichier |
-| Jekyll | GitHub Pages filtre certains fichiers avant de les servir | `.nojekyll` à la racine |
-
-Poids du site prêt à publier : **4,6 Mo** (52 fichiers), très loin des limites
-de GitHub (100 Mo par fichier, 1 Go par dépôt).
-
-### Les étapes
-
-```bash
-# 1. Vérifier avant d'envoyer
-node scripts/selftest.mjs          # 35 contrôles du moteur
-node scripts/check-deploy.mjs      # taille, chemins, casse — doit finir par « Prêt à publier »
-
-# 2. Versionner
-git init
-git add .
-git commit -m "TerangaLunar"
-git branch -M main
-git remote add origin https://github.com/<votre-compte>/<depot>.git
-git push -u origin main
-```
-
-3. Sur GitHub : **Settings → Pages → Source : Deploy from a branch**, puis
-   branche `main` et dossier `/ (root)`. Enregistrer.
-4. Attendre une minute : le site est sur
-   `https://<votre-compte>.github.io/<depot>/`.
-
-Les liens sont relatifs (`./assets/…`, `data/…`), donc le site fonctionne aussi
-bien à la racine d'un domaine que dans un sous-dossier `/<depot>/`. Aucune ligne
-à changer.
-
-### Mettre à jour
-
-```bash
-git add .
-git commit -m "…"
-git push
-```
-
-GitHub Pages republie tout seul en une minute environ. Si une page semble
-ancienne, forcez le rechargement (Ctrl+F5) : les fichiers sont mis en cache.
-
-### Si le gros fichier a déjà été commité
-
-Le `push` est alors refusé. Retirez-le de l'index, puis de l'historique :
-
-```bash
-git rm --cached pipeline/lola/LDEM_80S_80M.IMG
-git commit -m "Retire le produit LOLA du dépôt"
-# si le fichier est déjà dans un commit plus ancien :
-git filter-repo --path pipeline/lola/ --invert-paths
-```
-
-### Vérifier en ligne
-
-Ouvrez la console (F12). Un `404` sur un fichier nomme le chemin exact — c'est
-presque toujours une casse ou un fichier oublié : `node scripts/check-deploy.mjs`
-le trouve avant l'envoi.
-
-## Organisation
+## Ce qu'il y a dans le dépôt
 
 ```
-index.html                 coquille, écran de chargement, import map Three.js
-assets/css/tokens.css      palette et éléments de base
-assets/css/app.css         composants historiques
-assets/css/theme.css       ciel, dock, titres, panneaux
-assets/css/theme3.css      dock vertical, chargeur, page carte, transitions
-assets/css/surface.css     surfaces sombres arrondies, ombres, globe-cercle
-assets/js/app.js           routeur, coquille, écran de chargement
-assets/js/ephemeris.js     Soleil, Lune, repère MOON_ME
-assets/js/metrics.js       séries, agrégats, meilleures dates
-assets/js/charts.js        horizon polaire, frise, carte de chaleur
-assets/js/horizon.js       masques d'horizon (mesurés ou analytiques)
-assets/js/moon3d.js        globe Three.js, relief, marqueurs, point d'étude
-assets/vendor/three/       Three.js 0.169 livré avec le site (aucun CDN)
-scripts/check-deploy.mjs   contrôle avant publication (taille, chemins, casse)
-assets/js/orrery.js        diagramme Soleil–Terre–Lune interactif
-assets/js/map.js           la page carte
-assets/js/pages.js         visite guidée, catalogue, espace scientifique
-assets/js/views.js         accueil, fiche, dates, comparaison, aide
-assets/js/starfield.js     fond étoilé
-assets/js/live.js          client du service Python (silencieux s'il est absent)
-assets/js/precomputed.js   séries SPICE précalculées
-data/terrain.json          masques mesurés (générés)
-data/*.json                sites, seuils, scénarios, glossaire, sources
-pipeline/                  LDEM → masques, précalcul SPICE
-backend/                   service Python optionnel
+index.html                 coquille et écran de chargement
+assets/css/                jetons, composants, thème, surfaces, impression
+assets/js/                 routeur, éphéméride, métriques, graphiques, globe 3D
+assets/img/                textures lunaires, logo, icônes
+assets/vendor/three/       Three.js livré avec le site
+data/                      sites, masques, seuils, glossaire, sources
+backend/                   service Python facultatif (FastAPI)
+pipeline/                  LDEM vers masques, précalcul SPICE
+scripts/                   serveur local, contrôles, génération d'icônes
 ```
 
-## Design
-
-Ciel en obsidienne `#070A12`, or `#C9A227`, Soleil `#F6B23C`, Terre `#2563EB`.
-Titres en serif, texte en sans, peu de cartes, peu d'effets au survol : la
-hiérarchie porte la lecture, pas les ombres. L'information n'est jamais portée par
-la couleur seule (chaque état a aussi son libellé). Les animations se coupent avec
-`prefers-reduced-motion`, et le ciel disparaît à l'impression.
+`vercel.json` déclare le dépôt comme un projet à deux services : le site
+statique à la racine, et le service Python dans `backend/`, qui ne reçoit que
+les chemins `/api/`. Le site n'en dépend pas ; sans lui, tout continue de
+fonctionner avec le calcul local.
 
 ## Limites
 
-- Le précalcul SPICE et le service Python n'ont pas été exécutés ici (aucun noyau
-  JPL dans le dépôt) ; ils sont fournis avec leurs garde-fous.
-- Un point d'étude libre utilise un horizon plat : seuls les sites du catalogue
-  ont un masque mesuré. C'est écrit dans le panneau.
-- Pas de modèle thermique, de poussière, de pente ni de trajectoire de descente.
-- L'éphéméride analytique reste à ~0,1° de SPICE.
+Le précalcul SPICE et le service Python reposent sur des noyaux JPL qui ne sont
+pas dans le dépôt : ils sont fournis avec leurs garde-fous, mais n'ont pas été
+exécutés ici. Un point d'étude libre suppose un horizon plat, seuls les sites du
+catalogue ont un masque mesuré, et le panneau le dit. Il n'y a pas de modèle
+thermique, ni de poussière, ni de pente, ni de trajectoire de descente.
+L'éphéméride analytique reste à environ 0,1° de SPICE.
 
-## Sources et licences
+## Sources
 
 Voir `data/sources.json` et la page `#/help`. Données de mission : NASA CLPS.
-Texture : mosaïque LROC (`assets/img/moon.jpg`, 4096 × 2048), relief global
-`assets/img/ldem_3_8bit.jpg` (CGI Moon Kit), masques d'horizon dérivés de
-`LDEM_80S_80M` (LOLA GDR). Les cartes équirectangulaires sont échantillonnées en
+Texture : mosaïque LROC. Relief global : CGI Moon Kit. Masques d'horizon dérivés
+de LDEM_80S_80M (LOLA GDR). Les cartes équirectangulaires sont échantillonnées en
 miroir dans le shader, parce que `SphereGeometry` parcourt ses longitudes dans
-l'autre sens ; c'est ce qui garde les mers sous les coordonnées des marqueurs.
+l'autre sens, et c'est ce qui garde les mers sous les coordonnées des marqueurs.
